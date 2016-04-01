@@ -1,0 +1,24 @@
+package org.mondo.collaboration.security.query
+
+import "http://wt/access-control"
+
+pattern objectModule(module : Module) {
+	Module(module);
+}
+
+pattern objectControlWithType(control : Control, type) {
+	Control.type(control, type);
+}
+
+pattern objectCompositeWithType(composite : Composite, type) {
+	Composite.submodules(composite, control);
+	Control.type(control, type);
+} or {
+	find submodules+(composite,subcompsite);
+	Composite.submodules(subcompsite, control);
+	Control.type(control, type);
+}
+
+pattern submodules(parent:Composite,child:Composite) {
+	Composite.submodules(parent,child);
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="org.mondo.collaboration.security.query.Queries" point="org.eclipse.incquery.runtime.queryspecification">
+    <group group="org.eclipse.incquery.runtime.extensibility.SingletonExtensionFactory:org.mondo.collaboration.security.query.Queries" id="org.mondo.collaboration.security.query.Queries"/>
+  </extension>
+</plugin>
