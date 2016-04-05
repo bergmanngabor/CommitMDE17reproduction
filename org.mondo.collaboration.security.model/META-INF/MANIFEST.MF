@@ -5,5 +5,7 @@ Bundle-SymbolicName: org.mondo.collaboration.security.model
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.mondo.collaboration.security.meta;bundle-version="1.0.0",
- hu.bme.mit.inf.dslreasoner.visualisation.emf2yed
+ hu.bme.mit.inf.dslreasoner.visualisation.emf2yed,
+ org.eclipse.emf.ecore,
+ org.eclipse.emf.ecore.xmi
 Import-Package: com.google.common.collect

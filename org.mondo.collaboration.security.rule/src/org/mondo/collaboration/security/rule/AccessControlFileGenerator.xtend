@@ -3,48 +3,60 @@ package org.mondo.collaboration.security.rule
 class AccessControlFileGenerator {
 	def static generate(int numberOfUsers) {
 		'''
-		«generateUserHeader(numberOfUsers)»
-		«generateGroupHeader(numberOfUsers)»
-		«generatePolicy(numberOfUsers)»
+		Â«generateUserHeader(numberOfUsers)Â»
+		Â«generateGroupHeader(numberOfUsers)Â»
+		Â«generatePolicy(numberOfUsers)Â»
 		'''
 	}
 	
 	def static generateUserHeader(int numberOfUsers) '''
-	«FOR user : 1..numberOfUsers»
-		user user_«user»
-	«ENDFOR»'''
+	user superuser
+	Â«FOR user : 1..numberOfUsersÂ»
+		user user_Â«userÂ»
+	Â«ENDFORÂ»
+	'''
 	
 	def static generateGroupHeader(int numberOfUsers) '''
-	group defaultGroup {
-		«FOR user : 1..numberOfUsers SEPARATOR ','»user_«user»«ENDFOR»
+	group restrictedGroup {
+		Â«FOR user : 1..numberOfUsers SEPARATOR ','Â»user_Â«userÂ»Â«ENDFORÂ»
 	}'''
 	
 	def static generatePolicy(int numberOfUsers) '''
-	policy GeneratedWTPolicy_«numberOfUsers» first-applicable {
-		«FOR user : 1..numberOfUsers SEPARATOR ','»
-		«generateUserSpecificRules(user)»
-		«ENDFOR»
+	policy GeneratedWTPolicy_Â«numberOfUsersÂ» first-applicable {
+		Â«FOR user : 1..numberOfUsers SEPARATOR '''
+		'''Â»
+		Â«generateUserSpecificRules(user)Â»
+		Â«ENDFORÂ»
 		
-		«generateDefaultRule»
+		Â«generateDefaultRulesÂ»
 	}'''
 	
 	def static generateUserSpecificRules(int userId) '''
-	//Grant RW for user specific control units
-	rule permitUserSpecificControlUnit_«userId» permit RW to user_«userId» {
-		query "org.mondo.collaboration.security.query.objectControlWithType"
-		bind type value "«userId»"
-	}
+	// Rules specific to user Â«userIdÂ»
 	
-	//Grant RW for user specific control units
-	rule permitUserRelatedCompositeModules_«userId» permit R to user_«userId» {
-		query "org.mondo.collaboration.security.query.objectControlWithType"
-		bind type value "«userId»"
-	}	
+		//Grant RW for user specific control units
+		rule permitUserSpecificControlUnit_Â«userIdÂ» permit RW to user_Â«userIdÂ» {
+			query "org.mondo.collaboration.security.query.objectControlWithType"
+			bind type value "Â«userIdÂ»"
+		}
+		//Grant R for user specific composite hierarchy
+		rule permitUserRelatedCompositeModules_Â«userIdÂ» permit R to user_Â«userIdÂ» {
+			query "org.mondo.collaboration.security.query.objectCompositeWithType"
+			bind type value "Â«userIdÂ»"
+		}	
+	
 	'''
 	
-	def static generateDefaultRule() '''
-	//Default rule
-	rule denyAllModule deny RW to defaultGroup {
+	def static generateDefaultRules() '''
+	// IP protected modules
+	rule denyProtectedSignalRead deny RW to restrictedGroup {
+		query "org.mondo.collaboration.security.query.protectedModuleReadsSignal"
+	}		
+	rule denyProtectedVendor deny RW to restrictedGroup {
+		query "org.mondo.collaboration.security.query.protectedModuleVendor"
+	}		
+	// Default rule
+	rule denyAllModule deny RW to restrictedGroup {
 		query "org.mondo.collaboration.security.query.objectModule"
 	}'''
 	

@@ -16,3 +16,7 @@
 /Queries.java
 /SubmodulesMatch.java
 /SubmodulesMatcher.java
+/.ProtectedModuleReadsSignalMatch.java._trace
+/.ProtectedModuleReadsSignalMatcher.java._trace
+/.ProtectedModuleVendorMatch.java._trace
+/.ProtectedModuleVendorMatcher.java._trace

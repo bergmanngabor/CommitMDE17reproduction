@@ -11,14 +11,22 @@ pattern objectControlWithType(control : Control, type) {
 }
 
 pattern objectCompositeWithType(composite : Composite, type) {
-	Composite.submodules(composite, control);
-	Control.type(control, type);
-} or {
-	find submodules+(composite,subcompsite);
-	Composite.submodules(subcompsite, control);
+	find submodules+(composite,control);
 	Control.type(control, type);
 }
 
-pattern submodules(parent:Composite,child:Composite) {
+pattern submodules(parent:Composite,child:Module) {
 	Composite.submodules(parent,child);
+}
+
+@SecurityReference(feature="reads", src="module", trg="signal")
+pattern protectedModuleReadsSignal(module : Composite, signal : Signal) {
+	Module.consumes(module, signal);
+	Composite.protectedIP(module, true);
+}
+
+@SecurityAttribute(feature="vendor", src="module")
+pattern protectedModuleVendor(module : Composite, vendor) {
+	Composite.vendor(module, vendor);
+	Composite.protectedIP(module, true);
 }

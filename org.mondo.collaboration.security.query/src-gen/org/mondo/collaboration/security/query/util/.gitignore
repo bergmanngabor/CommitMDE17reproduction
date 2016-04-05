@@ -14,3 +14,7 @@
 /.SubmodulesQuerySpecification.java._trace
 /SubmodulesProcessor.java
 /SubmodulesQuerySpecification.java
+/.ProtectedModuleReadsSignalProcessor.java._trace
+/.ProtectedModuleReadsSignalQuerySpecification.java._trace
+/.ProtectedModuleVendorProcessor.java._trace
+/.ProtectedModuleVendorQuerySpecification.java._trace

@@ -16,7 +16,9 @@ public class AccessControlRuleGenerator {
 	private void generate() throws Exception {
 		for (int size : USER_SIZES) {
 			CharSequence model = AccessControlFileGenerator.generate(size);
-			save("C:\\Eclipse\\Articles\\workspace\\org.mondo.collaboration.security.model\\instances\\rules-"+size+".macl", model);
+			save(
+					String.format("../org.mondo.collaboration.security.model/instances/rules-%04d.macl", size), 
+					model);
 		}
 	}
 

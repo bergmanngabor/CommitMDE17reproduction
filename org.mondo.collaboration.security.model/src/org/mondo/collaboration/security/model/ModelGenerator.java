@@ -5,7 +5,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import com.google.common.collect.Lists;
 
@@ -25,6 +30,7 @@ public class ModelGenerator {
 	
 	
 	public static void main(String[] args) throws Exception {
+		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
 		ModelGenerator generator = new ModelGenerator();
 		generator.generate();
 	}
@@ -32,8 +38,14 @@ public class ModelGenerator {
 	private void generate() throws Exception {
 		for (int size : MODEL_SIZES) {
 			Composite model = generate(size);
+			save(
+					String.format("../org.mondo.collaboration.security.model/instances/model-%04d.xmi", size), 
+					model);
+			
 			CharSequence yed = calculateYed(model);
-			save("C:\\Eclipse\\Articles\\workspace\\org.mondo.collaboration.security.model\\instances\\model-"+size+".gml", yed);
+			save(
+					String.format("../org.mondo.collaboration.security.model/instances/model-%04d.gml", size), 
+					yed);
 		}
 	}
 
@@ -95,7 +107,7 @@ public class ModelGenerator {
 		Signal ctrlSignalInput = eFactory.createSignal();
 		parent.getProvides().add(parentSignalInput);
 		ctrl.getProvides().add(ctrlSignalInput);
-		ctrl.getReads().add(parentSignalInput);		
+		ctrl.getConsumes().add(parentSignalInput);		
 	}
 
 	private void createOutput(Composite parent, Control ctrl) {
@@ -103,7 +115,7 @@ public class ModelGenerator {
 		Signal ctrlSignalOutput = eFactory.createSignal();
 		parent.getProvides().add(parentSignalOutput);
 		ctrl.getProvides().add(ctrlSignalOutput);
-		parent.getReads().add(ctrlSignalOutput);		
+		parent.getConsumes().add(ctrlSignalOutput);		
 	}
 
 	private Cycle getRandomCycleEnum() {
@@ -118,6 +130,14 @@ public class ModelGenerator {
 		objects.add(model);
 		CharSequence sequence = yed.transform(objects);
 		return sequence;
+	}
+	
+	private void save(String path, Composite model) {
+		ResourceSet rset = new ResourceSetImpl();
+		Resource resource = rset.createResource(URI.createFileURI(path));
+		
+		resource.getContents().add(model);
+		resource.save(null);
 	}
 	
 	public static void save(String path, CharSequence sequence) throws Exception {
