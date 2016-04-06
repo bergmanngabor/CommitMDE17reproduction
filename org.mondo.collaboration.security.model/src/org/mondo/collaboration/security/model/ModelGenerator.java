@@ -1,9 +1,11 @@
 package org.mondo.collaboration.security.model;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -27,7 +29,7 @@ public class ModelGenerator {
 	public static final int[] MODEL_SIZES = {1,2,4,8,16,32,64,128,256};
 	public static final WtFactory eFactory = WtFactory.eINSTANCE;
 	public static final WtPackage ePackage = WtPackage.eINSTANCE;
-	
+	public static final Random rnd = new Random();
 	
 	public static void main(String[] args) throws Exception {
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
@@ -56,13 +58,13 @@ public class ModelGenerator {
 			rootComposite.setVendor("");
 		}
 		for(int id = 0; id < size; id++) {
-			Composite pyramidRoot = createPyramid(id);	
+			Composite pyramidRoot = createPyramid(id,size);	
 			rootComposite.getSubmodules().add(pyramidRoot);
 		}
 		return rootComposite;
 	}
 
-	private Composite createPyramid(int id) {
+	private Composite createPyramid(int id, int size) {
 		Composite pyramidRoot = eFactory.createComposite();
 		{
 			pyramidRoot.setProtectedIP(id % 2 == 1 ? true : false);
@@ -82,20 +84,20 @@ public class ModelGenerator {
 		pyramidRoot.getSubmodules().add(left);
 		pyramidRoot.getSubmodules().add(right);
 		
-		createController(id, left);
-		createController(id, left);
-		createController(id, right);
-		createController(id, right);
+		createController(size, left);
+		createController(size, left);
+		createController(size, right);
+		createController(size, right);
 		
 		return pyramidRoot;
 	}
 
-	private void createController(int id, Composite parent) {
+	private void createController(int numberOfUser, Composite parent) {
 		Control ctrl = eFactory.createControl();
 		{
 			parent.getSubmodules().add(ctrl);
 			ctrl.setCycle(getRandomCycleEnum());
-			ctrl.setType(id);
+			ctrl.setType(rnd.nextInt(numberOfUser));
 			
 			createInput(parent, ctrl);
 			createOutput(parent, ctrl);
@@ -132,7 +134,7 @@ public class ModelGenerator {
 		return sequence;
 	}
 	
-	private void save(String path, Composite model) {
+	private void save(String path, Composite model) throws IOException {
 		ResourceSet rset = new ResourceSetImpl();
 		Resource resource = rset.createResource(URI.createFileURI(path));
 		
