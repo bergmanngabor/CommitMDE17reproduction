@@ -11,14 +11,14 @@
       <genEnumLiterals ecoreEnumLiteral="wt.ecore#//Cycle/medium"/>
       <genEnumLiterals ecoreEnumLiteral="wt.ecore#//Cycle/low"/>
     </genEnums>
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="wt.ecore#//Type">
-      <genEnumLiterals ecoreEnumLiteral="wt.ecore#//Type/FanCtrl"/>
-      <genEnumLiterals ecoreEnumLiteral="wt.ecore#//Type/HeaterCtrl"/>
-      <genEnumLiterals ecoreEnumLiteral="wt.ecore#//Type/PumpCtrl"/>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="wt.ecore#//ControlUnitType">
+      <genEnumLiterals ecoreEnumLiteral="wt.ecore#//ControlUnitType/FanCtrl"/>
+      <genEnumLiterals ecoreEnumLiteral="wt.ecore#//ControlUnitType/HeaterCtrl"/>
+      <genEnumLiterals ecoreEnumLiteral="wt.ecore#//ControlUnitType/PumpCtrl"/>
     </genEnums>
     <genClasses ecoreClass="wt.ecore#//Module">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference wt.ecore#//Module/provides"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference wt.ecore#//Module/reads"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference wt.ecore#//Module/consumes"/>
     </genClasses>
     <genClasses ecoreClass="wt.ecore#//Composite">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute wt.ecore#//Composite/vendor"/>

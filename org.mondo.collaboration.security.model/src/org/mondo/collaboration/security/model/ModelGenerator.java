@@ -97,7 +97,7 @@ public class ModelGenerator {
 		{
 			parent.getSubmodules().add(ctrl);
 			ctrl.setCycle(getRandomCycleEnum());
-			ctrl.setType(rnd.nextInt(numberOfUser));
+			ctrl.setType(String.valueOf(rnd.nextInt(numberOfUser)));
 			
 			createInput(parent, ctrl);
 			createOutput(parent, ctrl);

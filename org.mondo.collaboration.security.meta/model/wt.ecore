@@ -14,7 +14,7 @@
         eType="#//Module" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Control" eSuperTypes="#//Module">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="cycle" eType="#//Cycle"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="Cycle">
