@@ -67,18 +67,18 @@ public class ModelGenerator {
 	private Composite createPyramid(int id, int size) {
 		Composite pyramidRoot = eFactory.createComposite();
 		{
-			pyramidRoot.setProtectedIP(id % 2 == 1 ? true : false);
+			pyramidRoot.setProtectedIP(rnd.nextBoolean());
 			pyramidRoot.setVendor(String.valueOf(id));
 		}
 		
 		Composite left = eFactory.createComposite();
 		{
-			left.setProtectedIP(id % 2 == 1 ? true : false);
+			left.setProtectedIP(rnd.nextBoolean());
 			left.setVendor(String.valueOf(id));
 		}
 		Composite right = eFactory.createComposite();
 		{
-			right.setProtectedIP(id % 2 == 1 ? true : false);
+			right.setProtectedIP(rnd.nextBoolean());
 			right.setVendor(String.valueOf(id));
 		}
 		pyramidRoot.getSubmodules().add(left);
