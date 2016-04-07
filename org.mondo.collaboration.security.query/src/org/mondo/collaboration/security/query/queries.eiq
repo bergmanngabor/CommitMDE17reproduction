@@ -1,6 +1,11 @@
 package org.mondo.collaboration.security.query
 
 import "http://wt/access-control"
+import "http://www.eclipse.org/emf/2002/Ecore"
+
+pattern objectAll(obj: EObject) {
+	EObject(obj);
+}
 
 pattern objectModule(module : Module) {
 	Module(module);
@@ -19,7 +24,7 @@ pattern submodules(parent:Composite,child:Module) {
 	Composite.submodules(parent,child);
 }
 
-@SecurityReference(feature="reads", src="module", trg="signal")
+@SecurityReference(feature="consumes", src="module", trg="signal")
 pattern protectedModuleReadsSignal(module : Composite, signal : Signal) {
 	Module.consumes(module, signal);
 	Composite.protectedIP(module, true);

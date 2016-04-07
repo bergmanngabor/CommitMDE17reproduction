@@ -58,6 +58,10 @@ class AccessControlFileGenerator {
 	// Default rule
 	rule denyAllModule deny RW to restrictedGroup {
 		query "org.mondo.collaboration.security.query.objectModule"
+	}
+	
+	rule allowEveryhing permit RW to superuser, restrictedGroup {
+		query "org.mondo.collaboration.security.query.objectAll"
 	}'''
 	
 }
