@@ -208,7 +208,7 @@ public class LensEvaluator {
 		System.gc();
 		System.gc();
 
-		logMeasurement(start, end, ChangeType.DeleteConsumeReference, size, user, session.getLegs().size());
+		logMeasurement(start, end, ChangeType.Complex, size, user, session.getLegs().size());
 
 	}
 	
