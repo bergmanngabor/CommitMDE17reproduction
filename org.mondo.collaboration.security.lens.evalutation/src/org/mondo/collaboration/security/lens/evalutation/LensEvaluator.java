@@ -70,8 +70,9 @@ public class LensEvaluator {
 		}
 	}
 
-	public static final int[] MODEL_SIZES = {13, 25, 38, 50, 63, 75, 88, 100};//{1,2,4,8,16,32,64,128,256};//
-	public static final int[] USER_SIZES = {10,20,30,40,50,60,70,80,90,100};//,128,256};
+	public static final int[] MODEL_SIZES = {25, 38, 50, 63, 75, 88, 100};
+	public static final int[] USER_SIZES = {10,20,30,40,50,60,70,80,90,100};
+	public static final int[] LIMIT_USERS = {10,25,50,75,100};
 
 	public final Random rnd = new Random();
 	
@@ -106,8 +107,7 @@ public class LensEvaluator {
 		logHeader();
 		for (int size : MODEL_SIZES) {
 			for (int user : USER_SIZES) {
-					if(size * 4 <= user) continue;
-					
+				for (int limit : LIMIT_USERS) {
 					System.gc();
 					System.gc();
 					System.gc();
@@ -116,8 +116,9 @@ public class LensEvaluator {
 					
 					LensEvaluator evaluator = new LensEvaluator(size, user);
 					evaluator.initializeLens();
-					evaluator.createLegs();
+					evaluator.createLegs(limit);
 					evaluator.measureChanges();
+				}
 			}
 		}
 	}
@@ -146,13 +147,13 @@ public class LensEvaluator {
 		this.session = session;
 	}
 	
-	public void createLegs() throws Exception {
+	public void createLegs(int limit) throws Exception {
 		{
 			String username = "superuser";
 			URI frontConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%s.xmi", size, user, username));
 			leg = session.new Leg(username, new StringObfuscator(username + "seed", username + "salt"), true, new ResourceSetImpl(), frontConfinementUri);
 		}
-		for (int i = 1; i <= user; i++) {
+		for (int i = 1; i <= limit; i++) {
 			String username = String.format("user_%d",i);
 			URI frontConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%d.xmi", size, user, i));
 			printMemoryUsage();
