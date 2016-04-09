@@ -26,8 +26,8 @@ import wt.WtPackage;
 
 public class ModelGenerator {
 
-	public static final int[] MODEL_SIZES = {1,2,4,8,16,32,64,128,256};
-	public static final int[] USER_SIZES = {1,2,4,8,16,32,64,128,256};
+	public static final int[] MODEL_SIZES = {13, 25, 38, 50, 63, 75, 88, 100};
+	public static final int[] USER_SIZES = {10,20,30,40,50,60,70,80,90,100};
 	public static final WtFactory eFactory = WtFactory.eINSTANCE;
 	public static final WtPackage ePackage = WtPackage.eINSTANCE;
 	public static final Random rnd = new Random();
