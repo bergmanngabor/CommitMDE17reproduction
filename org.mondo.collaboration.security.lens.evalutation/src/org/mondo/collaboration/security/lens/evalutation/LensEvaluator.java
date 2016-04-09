@@ -1,8 +1,7 @@
 package org.mondo.collaboration.security.lens.evalutation;
 
-import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
@@ -25,9 +24,8 @@ import org.mondo.collaboration.security.macl.xtext.AccessControlLanguageStandalo
 import org.mondo.collaboration.security.mpbl.xtext.MondoPropertyBasedLockingStandaloneSetup;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
-import hu.bme.mit.inf.dslreasoner.visualisation.emf2yed.Model2Yed;
 import wt.Module;
 import wt.Signal;
 import wt.WtFactory;
@@ -36,13 +34,14 @@ import wt.WtPackage;
 public class LensEvaluator {
 
 	public static final Set<ChangeType> CHANGE_TYPES = ImmutableSet.of(
+			ChangeType.Complex,
 			ChangeType.AddSignal, 
 			ChangeType.DeleteSignal, 
 			ChangeType.AddConsumeReference, 
 			ChangeType.DeleteConsumeReference);
 	
 	public enum ChangeType {
-		AddSignal, DeleteSignal, AddConsumeReference, DeleteConsumeReference
+		Complex, AddSignal, DeleteSignal, AddConsumeReference, DeleteConsumeReference
 	}
 	
 	private final class UniqueIDSchemeFactoryImplementation implements UniqueIDSchemeFactory {
@@ -106,7 +105,7 @@ public class LensEvaluator {
 		logHeader();
 		for (int size : MODEL_SIZES) {
 			for (int user : USER_SIZES) {
-					if(size * 4 < user) continue;
+					if(size * 4 <= user) continue;
 					
 					System.gc();
 					System.gc();
@@ -117,34 +116,11 @@ public class LensEvaluator {
 					LensEvaluator evaluator = new LensEvaluator(size, user);
 					evaluator.initializeLens();
 					evaluator.createLegs();
-					
-//					if(executedLargestNumberOfLegsToModelSize.containsKey(size) &&
-//							executedLargestNumberOfLegsToModelSize.get(size) >= evaluator.session.getLegs().size())
-//						continue;
-					
-//					logHeader();
 					evaluator.measureChanges();
 			}
 		}
 	}
 
-	private static void printMemoryUsage() {
-//		Runtime runtime = Runtime.getRuntime();
-//
-//		NumberFormat format = NumberFormat.getInstance();
-//
-//		StringBuilder sb = new StringBuilder();
-//		long maxMemory = runtime.maxMemory();
-//		long allocatedMemory = runtime.totalMemory();
-//		long freeMemory = runtime.freeMemory();
-//
-//		sb.append("free memory: " + format.format(freeMemory / 1024) + "\n");
-//		sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\n");
-//		sb.append("max memory: " + format.format(maxMemory / 1024) + "\n");
-//		sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\n");
-//		System.out.println(sb.toString());
-	}
-	
 	public void initializeLens() throws IncQueryException {
 		URI goldConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/model-%04d-%04d.xmi", size, user));
 		URI ruleFileUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/rules-%04d.macl", user));
@@ -174,150 +150,191 @@ public class LensEvaluator {
 			String username = "superuser";
 			URI frontConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%s.xmi", size, user, username));
 			leg = session.new Leg(username, new StringObfuscator(username + "seed", username + "salt"), true, new ResourceSetImpl(), frontConfinementUri);
-			Resource frontResource = leg.getFrontResourceSet().getResources().get(0);
-//			CharSequence yed = calculateYed(frontResource);
-//			save(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%s.gml", size, user, username), yed);
-//			frontResource.save(null);
-//			System.out.println(String.format("Model saved: %s", frontConfinementUri));
 		}
 		for (int i = 1; i <= user; i++) {
 			String username = String.format("user_%d",i);
 			URI frontConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%d.xmi", size, user, i));
 			printMemoryUsage();
-			Leg leg = session.new Leg(username, new StringObfuscator(username + "seed", username + "salt"), true, new ResourceSetImpl(), frontConfinementUri);
-			Resource frontResource = leg.getFrontResourceSet().getResources().get(0);
-			if(!frontResource.getAllContents().hasNext()) {
-				System.out.println("SKIPPING: No object in leg: " + frontConfinementUri);
-				leg.dispose();
-				continue;
-			}
-//			CharSequence yed = calculateYed(frontResource);
-//			save(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%d.gml", size, user, i), yed);
-//			frontResource.save(null);
-//			System.out.println(String.format("Model saved: %s", frontConfinementUri));
+			session.new Leg(username, new StringObfuscator(username + "seed", username + "salt"), true, new ResourceSetImpl(), frontConfinementUri);
 		}
 	}
 	
 	public void measureChanges() throws InterruptedException {
-		Module module = selectArbitraryModule();
-		for (ChangeType changeType : CHANGE_TYPES) {
-			switch (changeType) {
-			case AddConsumeReference:
-				measureAddConsumeReferenceChange(module);
-				break;
-			case AddSignal:
-				measureAddSignalChange(module);
-				break;
-			case DeleteConsumeReference:
-				measureDeleteConsumeReferenceChange(module);
-				break;
-			case DeleteSignal:
-				measureDeleteSignalChange(module);
-				break;
-			default:
-				break;
-			}
-		}
+		measureComplexChange();
+//		Module module = selectArbitraryModule();
+//		for (ChangeType changeType : CHANGE_TYPES) {
+//			switch (changeType) {
+//			case AddConsumeReference:
+//				measureAddConsumeReferenceChange(module);
+//				break;
+//			case AddSignal:
+//				measureAddSignalChange(module);
+//				break;
+//			case DeleteConsumeReference:
+//				measureDeleteConsumeReferenceChange(module);
+//				break;
+//			case DeleteSignal:
+//				measureDeleteSignalChange(module);
+//				break;
+//			default:
+//				break;
+//			}
+//		}
 		
 	}
 
-	private void measureAddConsumeReferenceChange(Module module) throws InterruptedException {
-		Signal signal = selectArbitrarySignal();
+	private void measureComplexChange() throws InterruptedException {
+		Map<Module, Signal> allConsumedSignal = getAllConsumedSignal();
 		
-		System.gc();
-		System.gc();
-		Thread.sleep(1000);
-		long start = System.nanoTime();
-		module.getConsumes().add(signal);
-		leg.trySubmitModification();
-		long end = System.nanoTime();
-		System.gc();
-		System.gc();
-		
-		logMeasurement(start, end, ChangeType.AddConsumeReference, size, user, session.getLegs().size());
-	}
-	
-	private void measureAddSignalChange(Module module) throws InterruptedException {
-		Signal signal = eFactory.createSignal();
-		
-		System.gc();
-		System.gc();
-		Thread.sleep(1000);
-		long start = System.nanoTime();
-		module.getProvides().add(signal);
-		leg.trySubmitModification();
-		long end = System.nanoTime();
-		System.gc();
-		System.gc();
-		
-		logMeasurement(start, end, ChangeType.AddSignal, size, user, session.getLegs().size());
-	}
-	
-	private void measureDeleteConsumeReferenceChange(Module module) throws InterruptedException {
-		Signal signal = module.getConsumes().get(0);
-		
-		System.gc();
-		System.gc();
-		Thread.sleep(1000);
-		long start = System.nanoTime();
-		module.getConsumes().remove(signal);
-		leg.trySubmitModification();
-		long end = System.nanoTime();
-		System.gc();
-		System.gc();
-		
-		logMeasurement(start, end, ChangeType.DeleteConsumeReference, size, user, session.getLegs().size());
-	}
-	
-	private void measureDeleteSignalChange(Module module) throws InterruptedException {
-		Signal signal = module.getProvides().get(0);
-		
-		System.gc();
-		System.gc();
-		Thread.sleep(1000);
-		long start = System.nanoTime();
-		module.getProvides().remove(signal);
-		leg.trySubmitModification();
-		long end = System.nanoTime();
-		System.gc();
-		System.gc();
-		
-		logMeasurement(start, end, ChangeType.DeleteSignal, size, user, session.getLegs().size());
-	}
-	
-	private Module selectArbitraryModule() {
-		List<Module> list = Lists.newArrayList();
-		for (TreeIterator<Notifier> iterator = leg.getFrontResourceSet().getAllContents(); iterator.hasNext();) {
-			Notifier notifier = iterator.next();
-			if (notifier instanceof Module) {
-				list.add((Module) notifier);
-			}
-		}
-		return list.get(rnd.nextInt(list.size()));
-	}
+		for (Entry<Module,Signal> entry : allConsumedSignal.entrySet()) {
+			Module consumer = entry.getKey();
+			Signal signal = entry.getValue();
+			Module provider = (Module) signal.eContainer(); 
+			
+			System.gc();
+			System.gc();
+			Thread.sleep(1000);
+			long start = System.nanoTime();
+			consumer.getProvides().add(signal);
+			provider.getConsumes().add(signal);
+			leg.trySubmitModification();
+			long end = System.nanoTime();
+			System.gc();
+			System.gc();
 
-	private Signal selectArbitrarySignal() {
-		List<Signal> list = Lists.newArrayList();
+			logMeasurement(start, end, ChangeType.DeleteConsumeReference, size, user, session.getLegs().size());
+		}
+	}
+	
+	private Map<Module,Signal> getAllConsumedSignal() {
+		Map<Module,Signal> ret = Maps.newHashMap();
 		for (TreeIterator<Notifier> iterator = leg.getFrontResourceSet().getAllContents(); iterator.hasNext();) {
 			Notifier notifier = iterator.next();
-			if (notifier instanceof Signal) {
-				list.add((Signal) notifier);
+			if(notifier instanceof Module) {
+				Module module = (Module) notifier;
+				for (Signal signal : module.getConsumes()) {
+					ret.put(module, signal);
+				}
+				
 			}
 		}
-		return list.get(rnd.nextInt(list.size()));
+		return ret;
 	}
 	
-	private CharSequence calculateYed(Resource model) {
-		Model2Yed yed = new Model2Yed();
-		CharSequence sequence = yed.transform(Lists.newArrayList(model.getAllContents()));
-		return sequence;
+	private static void printMemoryUsage() {
+//		Runtime runtime = Runtime.getRuntime();
+//
+//		NumberFormat format = NumberFormat.getInstance();
+//
+//		StringBuilder sb = new StringBuilder();
+//		long maxMemory = runtime.maxMemory();
+//		long allocatedMemory = runtime.totalMemory();
+//		long freeMemory = runtime.freeMemory();
+//
+//		sb.append("free memory: " + format.format(freeMemory / 1024) + "\n");
+//		sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\n");
+//		sb.append("max memory: " + format.format(maxMemory / 1024) + "\n");
+//		sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\n");
+//		System.out.println(sb.toString());
 	}
 	
-	public static void save(String path, CharSequence sequence) throws Exception {
-		try(  PrintWriter out = new PrintWriter( path )  ){
-		    out.println( sequence.toString() );
-		}
-	}
+//	private void measureAddConsumeReferenceChange(Module module) throws InterruptedException {
+//		Signal signal = selectArbitrarySignal();
+//		
+//		System.gc();
+//		System.gc();
+//		Thread.sleep(1000);
+//		long start = System.nanoTime();
+//		module.getConsumes().add(signal);
+//		leg.trySubmitModification();
+//		long end = System.nanoTime();
+//		System.gc();
+//		System.gc();
+//		
+//		logMeasurement(start, end, ChangeType.AddConsumeReference, size, user, session.getLegs().size());
+//	}
+//	
+//	private void measureAddSignalChange(Module module) throws InterruptedException {
+//		Signal signal = eFactory.createSignal();
+//		
+//		System.gc();
+//		System.gc();
+//		Thread.sleep(1000);
+//		long start = System.nanoTime();
+//		module.getProvides().add(signal);
+//		leg.trySubmitModification();
+//		long end = System.nanoTime();
+//		System.gc();
+//		System.gc();
+//		
+//		logMeasurement(start, end, ChangeType.AddSignal, size, user, session.getLegs().size());
+//	}
+//	
+//	private void measureDeleteConsumeReferenceChange(Module module) throws InterruptedException {
+//		Signal signal = module.getConsumes().get(0);
+//		
+//		System.gc();
+//		System.gc();
+//		Thread.sleep(1000);
+//		long start = System.nanoTime();
+//		module.getConsumes().remove(signal);
+//		leg.trySubmitModification();
+//		long end = System.nanoTime();
+//		System.gc();
+//		System.gc();
+//		
+//		logMeasurement(start, end, ChangeType.DeleteConsumeReference, size, user, session.getLegs().size());
+//	}
+//	
+//	private void measureDeleteSignalChange(Module module) throws InterruptedException {
+//		Signal signal = module.getProvides().get(0);
+//		
+//		System.gc();
+//		System.gc();
+//		Thread.sleep(1000);
+//		long start = System.nanoTime();
+//		module.getProvides().remove(signal);
+//		leg.trySubmitModification();
+//		long end = System.nanoTime();
+//		System.gc();
+//		System.gc();
+//		
+//		logMeasurement(start, end, ChangeType.DeleteSignal, size, user, session.getLegs().size());
+//	}
+	
+//	private Module selectArbitraryModule() {
+//		List<Module> list = Lists.newArrayList();
+//		for (TreeIterator<Notifier> iterator = leg.getFrontResourceSet().getAllContents(); iterator.hasNext();) {
+//			Notifier notifier = iterator.next();
+//			if (notifier instanceof Module) {
+//				list.add((Module) notifier);
+//			}
+//		}
+//		return list.get(rnd.nextInt(list.size()));
+//	}
+//
+//	private Signal selectArbitrarySignal() {
+//		List<Signal> list = Lists.newArrayList();
+//		for (TreeIterator<Notifier> iterator = leg.getFrontResourceSet().getAllContents(); iterator.hasNext();) {
+//			Notifier notifier = iterator.next();
+//			if (notifier instanceof Signal) {
+//				list.add((Signal) notifier);
+//			}
+//		}
+//		return list.get(rnd.nextInt(list.size()));
+//	}
+	
+//	private CharSequence calculateYed(Resource model) {
+//		Model2Yed yed = new Model2Yed();
+//		CharSequence sequence = yed.transform(Lists.newArrayList(model.getAllContents()));
+//		return sequence;
+//	}
+//	
+//	public static void save(String path, CharSequence sequence) throws Exception {
+//		try(  PrintWriter out = new PrintWriter( path )  ){
+//		    out.println( sequence.toString() );
+//		}
+//	}
 	
 	private static void logHeader() {
 		System.out.println("ChangeType;ModelSize;UserSize;NumberOfLegs;ExecutionTime(nano)");
