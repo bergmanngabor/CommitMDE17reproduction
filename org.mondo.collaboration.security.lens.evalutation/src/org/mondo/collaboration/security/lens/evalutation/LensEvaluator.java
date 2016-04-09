@@ -1,5 +1,6 @@
 package org.mondo.collaboration.security.lens.evalutation;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -185,25 +186,30 @@ public class LensEvaluator {
 
 	private void measureComplexChange() throws InterruptedException {
 		Map<Module, Signal> allConsumedSignal = getAllConsumedSignal();
+		Iterator<Entry<Module, Signal>> iterator = allConsumedSignal.entrySet().iterator();
 		
-		for (Entry<Module,Signal> entry : allConsumedSignal.entrySet()) {
+		System.gc();
+		System.gc();
+		Thread.sleep(1000);
+		long start = System.nanoTime();
+		for (int i = 0; i < 100; i++) {
+			Entry<Module, Signal> entry = iterator.next();
 			Module consumer = entry.getKey();
 			Signal signal = entry.getValue();
 			Module provider = (Module) signal.eContainer(); 
 			
-			System.gc();
-			System.gc();
-			Thread.sleep(1000);
-			long start = System.nanoTime();
 			consumer.getProvides().add(signal);
 			provider.getConsumes().add(signal);
 			leg.trySubmitModification();
-			long end = System.nanoTime();
-			System.gc();
-			System.gc();
-
-			logMeasurement(start, end, ChangeType.DeleteConsumeReference, size, user, session.getLegs().size());
+			
 		}
+		
+		long end = System.nanoTime();
+		System.gc();
+		System.gc();
+
+		logMeasurement(start, end, ChangeType.DeleteConsumeReference, size, user, session.getLegs().size());
+
 	}
 	
 	private Map<Module,Signal> getAllConsumedSignal() {
