@@ -27,6 +27,7 @@ import wt.WtPackage;
 public class ModelGenerator {
 
 	public static final int[] MODEL_SIZES = {1,2,4,8,16,32,64,128,256};
+	public static final int[] USER_SIZES = {1,2,4,8,16,32,64,128,256};
 	public static final WtFactory eFactory = WtFactory.eINSTANCE;
 	public static final WtPackage ePackage = WtPackage.eINSTANCE;
 	public static final Random rnd = new Random();
@@ -39,32 +40,35 @@ public class ModelGenerator {
 
 	private void generate() throws Exception {
 		for (int size : MODEL_SIZES) {
-			Composite model = generate(size);
-			save(
-					String.format("../org.mondo.collaboration.security.model/instances/model-%04d.xmi", size), 
-					model);
-			
-			CharSequence yed = calculateYed(model);
-			save(
-					String.format("../org.mondo.collaboration.security.model/instances/model-%04d.gml", size), 
-					yed);
+			for (int user : USER_SIZES) {
+				if(size * 4 < user) continue;
+				Composite model = generate(size, user);
+				save(
+						String.format("../org.mondo.collaboration.security.model/instances/model-%04d-%04d.xmi", size, user), 
+						model);
+				
+				CharSequence yed = calculateYed(model);
+				save(
+						String.format("../org.mondo.collaboration.security.model/instances/model-%04d-%04d.gml", size, user), 
+						yed);
+			}
 		}
 	}
 
-	private Composite generate(int size) {
+	private Composite generate(int size, int user) {
 		Composite rootComposite = eFactory.createComposite();
 		{
 			rootComposite.setProtectedIP(false);
 			rootComposite.setVendor("");
 		}
 		for(int id = 0; id < size; id++) {
-			Composite pyramidRoot = createPyramid(id,size);	
+			Composite pyramidRoot = createPyramid(id,size,user);	
 			rootComposite.getSubmodules().add(pyramidRoot);
 		}
 		return rootComposite;
 	}
 
-	private Composite createPyramid(int id, int size) {
+	private Composite createPyramid(int id, int size, int user) {
 		Composite pyramidRoot = eFactory.createComposite();
 		{
 			pyramidRoot.setProtectedIP(rnd.nextBoolean());
@@ -84,26 +88,37 @@ public class ModelGenerator {
 		pyramidRoot.getSubmodules().add(left);
 		pyramidRoot.getSubmodules().add(right);
 		
-		createController(size, left);
-		createController(size, left);
-		createController(size, right);
-		createController(size, right);
+		createController(user,left);
+		createController(user,left);
+		createController(user,right);
+		createController(user,right);
 		
 		return pyramidRoot;
 	}
 
-	private void createController(int numberOfUser, Composite parent) {
+	private void createController(int user, Composite parent) {
 		Control ctrl = eFactory.createControl();
 		{
 			parent.getSubmodules().add(ctrl);
 			ctrl.setCycle(getRandomCycleEnum());
-			ctrl.setType(String.valueOf(rnd.nextInt(numberOfUser)+1));
+			ctrl.setType(selectArbitraryUser(user));
 			
 			createInput(parent, ctrl);
 			createOutput(parent, ctrl);
 		}
 	}
 	
+	List<String> userIds = Lists.newArrayList();
+	private String selectArbitraryUser(int user) {
+		if(userIds.isEmpty()) {
+			for(int i = 1; i <= user; i++) {
+				userIds.add(String.valueOf(i));
+			}
+		}
+		Collections.shuffle(userIds);
+		return userIds.remove(0);
+	}
+
 	private void createInput(Composite parent, Control ctrl) {
 		Signal parentSignalInput = eFactory.createSignal();
 		Signal ctrlSignalInput = eFactory.createSignal();

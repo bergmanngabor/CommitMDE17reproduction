@@ -1,11 +1,13 @@
 package org.mondo.collaboration.security.lens.evalutation;
 
 import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
 import org.eclipse.emf.common.notify.Notifier;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -68,8 +70,8 @@ public class LensEvaluator {
 		}
 	}
 
-	public static final int[] MODEL_SIZES = {1,2,4,8,16,32,64,128,256};
-	public static final int[] USER_SIZES = {1,2,4,8,16,32,64,128,256};
+	public static final int[] MODEL_SIZES = {13, 25, 38, 50, 63, 75, 88, 100};//{1,2,4,8,16,32,64,128,256};//
+	public static final int[] USER_SIZES = {10,20,30,40,50,60,70,80,90,100};//,128,256};
 
 	public final Random rnd = new Random();
 	
@@ -83,12 +85,17 @@ public class LensEvaluator {
 	
 	private OnlineCollaborationSession session;
 	private Leg leg;
-	
+		
 	public LensEvaluator(int size, int user) {
 		this.size = size;
 		this.user = user;
 	}
 
+	public void dispose() {
+		while(!session.getLegs().isEmpty())
+			session.getLegs().iterator().next().dispose();
+	}
+	
 	public static void main(String[] args) throws Exception {
 		
 		EMFPatternLanguageStandaloneSetup.doSetup();
@@ -96,20 +103,50 @@ public class LensEvaluator {
 		MondoPropertyBasedLockingStandaloneSetup.doSetup();
 		
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
+		logHeader();
 		for (int size : MODEL_SIZES) {
 			for (int user : USER_SIZES) {
-				LensEvaluator evaluator = new LensEvaluator(size, user);
-				evaluator.initializeLens();
-				evaluator.createLegs();
-				
-				logHeader();
-				evaluator.measureChanges();
+					if(size * 4 < user) continue;
+					
+					System.gc();
+					System.gc();
+					System.gc();
+					
+					printMemoryUsage();
+					
+					LensEvaluator evaluator = new LensEvaluator(size, user);
+					evaluator.initializeLens();
+					evaluator.createLegs();
+					
+//					if(executedLargestNumberOfLegsToModelSize.containsKey(size) &&
+//							executedLargestNumberOfLegsToModelSize.get(size) >= evaluator.session.getLegs().size())
+//						continue;
+					
+//					logHeader();
+					evaluator.measureChanges();
 			}
 		}
 	}
+
+	private static void printMemoryUsage() {
+//		Runtime runtime = Runtime.getRuntime();
+//
+//		NumberFormat format = NumberFormat.getInstance();
+//
+//		StringBuilder sb = new StringBuilder();
+//		long maxMemory = runtime.maxMemory();
+//		long allocatedMemory = runtime.totalMemory();
+//		long freeMemory = runtime.freeMemory();
+//
+//		sb.append("free memory: " + format.format(freeMemory / 1024) + "\n");
+//		sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "\n");
+//		sb.append("max memory: " + format.format(maxMemory / 1024) + "\n");
+//		sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\n");
+//		System.out.println(sb.toString());
+	}
 	
 	public void initializeLens() throws IncQueryException {
-		URI goldConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/model-%04d.xmi", size));
+		URI goldConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/model-%04d-%04d.xmi", size, user));
 		URI ruleFileUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/rules-%04d.macl", user));
 		URI queryFileUri = URI.createFileURI(WORKING_DIRECTORY + "org.mondo.collaboration.security.query/src/org/mondo/collaboration/security/query/queries.eiq");
 		ResourceSet goldResourceSet = new ResourceSetImpl();
@@ -138,20 +175,26 @@ public class LensEvaluator {
 			URI frontConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%s.xmi", size, user, username));
 			leg = session.new Leg(username, new StringObfuscator(username + "seed", username + "salt"), true, new ResourceSetImpl(), frontConfinementUri);
 			Resource frontResource = leg.getFrontResourceSet().getResources().get(0);
-			CharSequence yed = calculateYed(frontResource);
-			save(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%s.gml", size, user, username), yed);
-			frontResource.save(null);
-			System.out.println(String.format("Model saved: %s", frontConfinementUri));
+//			CharSequence yed = calculateYed(frontResource);
+//			save(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%s.gml", size, user, username), yed);
+//			frontResource.save(null);
+//			System.out.println(String.format("Model saved: %s", frontConfinementUri));
 		}
 		for (int i = 1; i <= user; i++) {
 			String username = String.format("user_%d",i);
 			URI frontConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%d.xmi", size, user, i));
+			printMemoryUsage();
 			Leg leg = session.new Leg(username, new StringObfuscator(username + "seed", username + "salt"), true, new ResourceSetImpl(), frontConfinementUri);
 			Resource frontResource = leg.getFrontResourceSet().getResources().get(0);
-			CharSequence yed = calculateYed(frontResource);
-			save(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%d.gml", size, user, i), yed);
-			frontResource.save(null);
-			System.out.println(String.format("Model saved: %s", frontConfinementUri));
+			if(!frontResource.getAllContents().hasNext()) {
+				System.out.println("SKIPPING: No object in leg: " + frontConfinementUri);
+				leg.dispose();
+				continue;
+			}
+//			CharSequence yed = calculateYed(frontResource);
+//			save(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%d.gml", size, user, i), yed);
+//			frontResource.save(null);
+//			System.out.println(String.format("Model saved: %s", frontConfinementUri));
 		}
 	}
 	
@@ -190,7 +233,7 @@ public class LensEvaluator {
 		System.gc();
 		System.gc();
 		
-		logMeasurement(start, end, ChangeType.AddSignal, size, user);
+		logMeasurement(start, end, ChangeType.AddConsumeReference, size, user, session.getLegs().size());
 	}
 	
 	private void measureAddSignalChange(Module module) throws InterruptedException {
@@ -205,7 +248,7 @@ public class LensEvaluator {
 		System.gc();
 		System.gc();
 		
-		logMeasurement(start, end, ChangeType.AddSignal, size, user);
+		logMeasurement(start, end, ChangeType.AddSignal, size, user, session.getLegs().size());
 	}
 	
 	private void measureDeleteConsumeReferenceChange(Module module) throws InterruptedException {
@@ -220,7 +263,7 @@ public class LensEvaluator {
 		System.gc();
 		System.gc();
 		
-		logMeasurement(start, end, ChangeType.DeleteSignal, size, user);
+		logMeasurement(start, end, ChangeType.DeleteConsumeReference, size, user, session.getLegs().size());
 	}
 	
 	private void measureDeleteSignalChange(Module module) throws InterruptedException {
@@ -235,7 +278,7 @@ public class LensEvaluator {
 		System.gc();
 		System.gc();
 		
-		logMeasurement(start, end, ChangeType.DeleteSignal, size, user);
+		logMeasurement(start, end, ChangeType.DeleteSignal, size, user, session.getLegs().size());
 	}
 	
 	private Module selectArbitraryModule() {
@@ -275,11 +318,11 @@ public class LensEvaluator {
 	}
 	
 	private static void logHeader() {
-		System.out.println("ChangeType;ModelSize;UserSize;ExecutionTime(nano)");
+		System.out.println("ChangeType;ModelSize;UserSize;NumberOfLegs;ExecutionTime(nano)");
 	}
 	
-	private static void logMeasurement(long start, long end, ChangeType type, int size, int user) {
-		System.out.println(String.format("%s;%d;%d;%d", type, size, user, end-start));
+	private static void logMeasurement(long start, long end, ChangeType type, int size, int user, int legCount) {
+		System.out.println(String.format("%s;%d;%d;%d;%d", type, size, user, legCount, end-start));
 	}
 	
 }

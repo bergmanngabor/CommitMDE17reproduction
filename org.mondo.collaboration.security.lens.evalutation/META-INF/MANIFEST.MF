@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Evalutation
-Bundle-SymbolicName: org.mondo.collaboration.security.lens.evalutation
+Bundle-SymbolicName: org.mondo.collaboration.security.lens.evalutation;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -9,7 +9,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.emf.ecore.xmi,
  org.mondo.collaboration.security.lens,
  org.eclipse.viatra.modelobfuscator.runtime,
- org.eclipse.emf.emfstore.common,
  org.mondo.collaboration.security.meta;bundle-version="1.0.0",
  org.mondo.collaboration.security.macl.xtext.rule;bundle-version="1.0.0",
  org.mondo.collaboration.security.macl.xtext;bundle-version="1.0.0",

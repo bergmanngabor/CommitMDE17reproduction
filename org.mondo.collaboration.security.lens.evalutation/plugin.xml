@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.mondo.collaboration.security.lens.evalutation.id1"
+            name="evluation">
+         <property
+               name="appName"
+               value="evluation">
+         </property>
+      </product>
+   </extension>
+   <extension
+         id="id1"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="org.mondo.collaboration.security.lens.evalutation.Application">
+         </run>
+      </application>
+   </extension>
+
+</plugin>
