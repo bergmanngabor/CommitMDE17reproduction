@@ -1,11 +1,13 @@
 package org.mondo.collaboration.security.lens.evalutation;
 
 import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
 import org.eclipse.emf.common.notify.Notifier;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -186,6 +188,7 @@ public class LensEvaluator {
 		Thread.sleep(1000);
 		long start = System.nanoTime();
 		module.getConsumes().add(signal);
+		leg.trySubmitModification();
 		long end = System.nanoTime();
 		System.gc();
 		System.gc();
@@ -201,6 +204,7 @@ public class LensEvaluator {
 		Thread.sleep(1000);
 		long start = System.nanoTime();
 		module.getProvides().add(signal);
+		leg.trySubmitModification();
 		long end = System.nanoTime();
 		System.gc();
 		System.gc();
@@ -216,6 +220,7 @@ public class LensEvaluator {
 		Thread.sleep(1000);
 		long start = System.nanoTime();
 		module.getConsumes().remove(signal);
+		leg.trySubmitModification();
 		long end = System.nanoTime();
 		System.gc();
 		System.gc();
@@ -231,6 +236,7 @@ public class LensEvaluator {
 		Thread.sleep(1000);
 		long start = System.nanoTime();
 		module.getProvides().remove(signal);
+		leg.trySubmitModification();
 		long end = System.nanoTime();
 		System.gc();
 		System.gc();
@@ -239,27 +245,25 @@ public class LensEvaluator {
 	}
 	
 	private Module selectArbitraryModule() {
-		List<Notifier> list = Lists.newArrayList(leg.getFrontResourceSet().getAllContents());
-		for(int i = 0; i < list.size(); i++) {
-			Notifier notifier = list.get(i);
-			if(notifier instanceof Signal || notifier instanceof Resource) {
-				list.remove(notifier);
-				i--;
+		List<Module> list = Lists.newArrayList();
+		for (TreeIterator<Notifier> iterator = leg.getFrontResourceSet().getAllContents(); iterator.hasNext();) {
+			Notifier notifier = iterator.next();
+			if (notifier instanceof Module) {
+				list.add((Module) notifier);
 			}
 		}
-		return (Module) list.get(rnd.nextInt(list.size()));
+		return list.get(rnd.nextInt(list.size()));
 	}
 
 	private Signal selectArbitrarySignal() {
-		List<Notifier> list = Lists.newArrayList(leg.getFrontResourceSet().getAllContents());
-		for(int i = 0; i < list.size(); i++) {
-			Notifier notifier = list.get(i);
-			if(notifier instanceof Module || notifier instanceof Resource) {
-				list.remove(notifier);
-				i--;
+		List<Signal> list = Lists.newArrayList();
+		for (TreeIterator<Notifier> iterator = leg.getFrontResourceSet().getAllContents(); iterator.hasNext();) {
+			Notifier notifier = iterator.next();
+			if (notifier instanceof Signal) {
+				list.add((Signal) notifier);
 			}
 		}
-		return (Signal) list.get(rnd.nextInt(list.size()));
+		return list.get(rnd.nextInt(list.size()));
 	}
 	
 	private CharSequence calculateYed(Resource model) {
