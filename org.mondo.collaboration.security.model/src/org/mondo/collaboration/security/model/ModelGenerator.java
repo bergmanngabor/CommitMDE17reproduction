@@ -16,7 +16,6 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import com.google.common.collect.Lists;
 
-import hu.bme.mit.inf.dslreasoner.visualisation.emf2yed.Model2Yed;
 import wt.Composite;
 import wt.Control;
 import wt.Cycle;
@@ -26,7 +25,7 @@ import wt.WtPackage;
 
 public class ModelGenerator {
 
-	public static final int[] MODEL_SIZES = {13, 25, 38, 50, 63, 75, 88, 100};
+	public static final int[] MODEL_SIZES = {13, 25, 38, 50, 63, 75, 88, 100, 150, 200, 250, 300, 350};
 	public static final int[] CTRL_TYPE_SIZES = {10,20,30,40,50,60,70,80,90,100};
 	public static final WtFactory eFactory = WtFactory.eINSTANCE;
 	public static final WtPackage ePackage = WtPackage.eINSTANCE;

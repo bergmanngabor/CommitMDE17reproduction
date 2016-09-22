@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 public class AccessControlRuleGenerator {
 
 	public static final int[] MODEL_SIZES = {13, 25, 38, 50, 63, 75, 88, 100};
-	public static final int[] USER_SIZES = {10,20,30,40,50,60,70,80,90,100};
+	public static final int[] USER_SIZES = {2,5,10,20,30,40,50,60,70,80,90,100};
 
 	public static void main(String[] args) throws Exception {
 		AccessControlRuleGenerator generator = new AccessControlRuleGenerator();

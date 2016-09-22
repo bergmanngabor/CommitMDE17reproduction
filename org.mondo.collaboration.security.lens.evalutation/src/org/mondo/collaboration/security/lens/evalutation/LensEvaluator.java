@@ -1,5 +1,6 @@
 package org.mondo.collaboration.security.lens.evalutation;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,6 +75,8 @@ public class LensEvaluator {
 	public static final int[] USER_SIZES = {10,20,30,40,50,60,70,80,90,100};
 	public static final int[] LIMIT_USERS = {10,25,50,75,100};
 
+	public static int repeat = 1;
+	
 	public final Random rnd = new Random();
 	
 	public static final String WORKING_DIRECTORY = System.getProperty("user.dir").replace("org.mondo.collaboration.security.lens.evalutation", "");
@@ -86,6 +89,7 @@ public class LensEvaluator {
 	
 	private OnlineCollaborationSession session;
 	private Leg leg;
+	private static HashMap<String,String> mainArgs;
 		
 	public LensEvaluator(int size, int user) {
 		this.size = size;
@@ -99,28 +103,87 @@ public class LensEvaluator {
 	
 	public static void main(String[] args) throws Exception {
 		
+		processArgs(args);
+		
 		EMFPatternLanguageStandaloneSetup.doSetup();
 		AccessControlLanguageStandaloneSetup.doSetup();
 		MondoPropertyBasedLockingStandaloneSetup.doSetup();
 		
+		OnlineCollaborationSession.AUTO_SAVE = false;
+		
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
 		logHeader();
-		for (int size : MODEL_SIZES) {
-			for (int user : USER_SIZES) {
-				for (int limit : LIMIT_USERS) {
-					System.gc();
-					System.gc();
-					System.gc();
-					
-					printMemoryUsage();
-					
-					LensEvaluator evaluator = new LensEvaluator(size, user);
-					evaluator.initializeLens();
-					evaluator.createLegs(limit);
-					evaluator.measureChanges();
-				}
+		
+		if(mainArgs.get("repeat") != null)
+			repeat = Integer.valueOf(mainArgs.get("repeat"));
+		
+		iterateOverModelSizes();
+	}
+
+	private static void iterateOverModelSizes() throws Exception {
+		if(mainArgs.get("model_size") == null)		
+			for (int model_size : MODEL_SIZES) {
+				iterateOverUserSizes(model_size);
 			}
+		else {
+			iterateOverUserSizes(Integer.valueOf(mainArgs.get("model_size")));
+		}		
+	}
+	
+	private static void iterateOverUserSizes(int model_size) throws Exception {
+		if(mainArgs.get("user_size") == null)	{	
+			for (int user_size : USER_SIZES) {
+				iterateOverLimitUsers(model_size, user_size);
+			}
+		} else {
+			iterateOverLimitUsers(model_size, Integer.valueOf(mainArgs.get("user_size")));
 		}
+	}
+	
+	private static void iterateOverLimitUsers(int model_size, int user_size) throws Exception {
+		if(mainArgs.get("limit_size") == null) {		
+			for (int limit : LIMIT_USERS) {
+				if(limit > user_size) continue;					
+				for(int count = 0; count < repeat; count++)
+					execute(model_size, user_size, limit);
+			}
+		} else {
+			int limit = Integer.valueOf(mainArgs.get("limit_size"));
+			if(limit > user_size) return;
+			for(int count = 0; count < repeat; count++)
+				execute(model_size, user_size, limit);
+		}
+	}
+
+	private static void processArgs(String[] args) {
+		mainArgs = new HashMap<String,String>();
+
+		for(int i=0;i<args.length;i++){
+			if(args[i].trim().startsWith("-model_size"))
+				mainArgs.put("model_size",args[i+1]);
+			if(args[i].trim().startsWith("-user_size"))
+				mainArgs.put("user_size",args[i+1]);
+			if(args[i].trim().startsWith("-limit_size"))
+				mainArgs.put("limit_size",args[i+1]);
+			if(args[i].trim().startsWith("-repeat"))
+				mainArgs.put("repeat",args[i+1]);
+		}		
+	}
+	
+	
+	private static LensEvaluator execute(int size, int max_user, int limit)
+			throws IncQueryException, Exception, InterruptedException {
+		System.gc();
+		System.gc();
+		System.gc();
+		
+		printMemoryUsage();
+		
+		LensEvaluator evaluator = new LensEvaluator(size, max_user);
+		evaluator.initializeLens();
+		evaluator.createLegs(limit, max_user);
+		evaluator.measureChanges();
+		return evaluator;
 	}
 
 	public void initializeLens() throws IncQueryException {
@@ -147,7 +210,7 @@ public class LensEvaluator {
 		this.session = session;
 	}
 	
-	public void createLegs(int limit) throws Exception {
+	public void createLegs(int limit, int max) throws Exception {
 		{
 			String username = "superuser";
 			URI frontConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/view-model-size-%d-user-%d-current-%s.xmi", size, user, username));
