@@ -46,10 +46,10 @@ public class ModelGenerator {
 						String.format("../org.mondo.collaboration.security.model/instances/model-%04d-%04d.xmi", size, ctrlRange), 
 						model);
 				
-				CharSequence yed = calculateYed(model);
-				save(
-						String.format("../org.mondo.collaboration.security.model/instances/model-%04d-%04d.gml", size, ctrlRange), 
-						yed);
+//				CharSequence yed = calculateYed(model);
+//				save(
+//						String.format("../org.mondo.collaboration.security.model/instances/model-%04d-%04d.gml", size, ctrlRange), 
+//						yed);
 			}
 		}
 	}
@@ -153,13 +153,13 @@ public class ModelGenerator {
 		return list.get(0);
 	}
 	
-	private CharSequence calculateYed(Composite model) {
-		Model2Yed yed = new Model2Yed();
-		ArrayList<EObject> objects = Lists.newArrayList(model.eAllContents());
-		objects.add(model);
-		CharSequence sequence = yed.transform(objects);
-		return sequence;
-	}
+//	private CharSequence calculateYed(Composite model) {
+//		Model2Yed yed = new Model2Yed();
+//		ArrayList<EObject> objects = Lists.newArrayList(model.eAllContents());
+//		objects.add(model);
+//		CharSequence sequence = yed.transform(objects);
+//		return sequence;
+//	}
 	
 	private void save(String path, Composite model) throws IOException {
 		ResourceSet rset = new ResourceSetImpl();

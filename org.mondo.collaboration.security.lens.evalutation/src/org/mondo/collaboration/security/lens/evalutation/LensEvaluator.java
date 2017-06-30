@@ -15,15 +15,14 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.incquery.patternlanguage.emf.EMFPatternLanguageStandaloneSetup;
-import org.eclipse.incquery.runtime.exception.IncQueryException;
 import org.eclipse.viatra.modelobfuscator.util.StringObfuscator;
+import org.eclipse.viatra.query.patternlanguage.emf.EMFPatternLanguageStandaloneSetup;
+import org.eclipse.viatra.query.runtime.exception.ViatraQueryException;
+import org.mondo.collaboration.policy.RulesStandaloneSetup;
 import org.mondo.collaboration.security.lens.bx.online.OnlineCollaborationSession;
 import org.mondo.collaboration.security.lens.bx.online.OnlineCollaborationSession.Leg;
 import org.mondo.collaboration.security.lens.correspondence.EObjectCorrespondence.UniqueIDScheme;
 import org.mondo.collaboration.security.lens.correspondence.EObjectCorrespondence.UniqueIDSchemeFactory;
-import org.mondo.collaboration.security.macl.xtext.AccessControlLanguageStandaloneSetup;
-import org.mondo.collaboration.security.mpbl.xtext.MondoPropertyBasedLockingStandaloneSetup;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -106,10 +105,7 @@ public class LensEvaluator {
 		processArgs(args);
 		
 		EMFPatternLanguageStandaloneSetup.doSetup();
-		AccessControlLanguageStandaloneSetup.doSetup();
-		MondoPropertyBasedLockingStandaloneSetup.doSetup();
-		
-		OnlineCollaborationSession.AUTO_SAVE = false;
+		RulesStandaloneSetup.doSetup();
 		
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
 		logHeader();
@@ -171,8 +167,7 @@ public class LensEvaluator {
 	}
 	
 	
-	private static LensEvaluator execute(int size, int max_user, int limit)
-			throws IncQueryException, Exception, InterruptedException {
+	private static LensEvaluator execute(int size, int max_user, int limit) throws Exception {
 		System.gc();
 		System.gc();
 		System.gc();
@@ -186,7 +181,7 @@ public class LensEvaluator {
 		return evaluator;
 	}
 
-	public void initializeLens() throws IncQueryException {
+	public void initializeLens() throws ViatraQueryException {
 		URI goldConfinementUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/model-%04d-%04d.xmi", size, user));
 		URI ruleFileUri = URI.createFileURI(WORKING_DIRECTORY + String.format("org.mondo.collaboration.security.model/instances/rules-%04d.macl", user));
 		URI queryFileUri = URI.createFileURI(WORKING_DIRECTORY + "org.mondo.collaboration.security.query/src/org/mondo/collaboration/security/query/queries.eiq");
@@ -205,7 +200,8 @@ public class LensEvaluator {
 				goldResourceSet, 
 				new UniqueIDSchemeFactoryImplementation(), 
 				policyResourceSet.getResource(ruleFileUri, true), 
-				null, "user_1", "dummy_password");
+				null, "user_1", "dummy_password",
+				false);
 		
 		this.session = session;
 	}
