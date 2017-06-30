@@ -1,0 +1,10 @@
+package org.mondo.collaboration.security.arbiter
+
+import epackage "http://wt/access-control"
+import epackage "http://www.eclipse.org/emf/2002/Ecore"
+
+pattern contains(container: EObject, contained: EObject) = {
+	Module.provides(container, contained);
+} or {
+	Composite.submodules(container, contained);
+}

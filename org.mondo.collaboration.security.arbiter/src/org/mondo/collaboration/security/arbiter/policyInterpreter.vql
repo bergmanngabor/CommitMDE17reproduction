@@ -1,0 +1,98 @@
+package org.mondo.collaboration.security.arbiter
+
+import "http://www.eclipse.org/emf/2002/Ecore"
+import "http://wt/access-control"
+import "http://mondo.org/collaboration/security/arbiter/vocabulary"
+
+import java org.eclipse.emf.common.util.Enumerator
+
+import org.mondo.collaboration.security.query.objectModule
+import org.mondo.collaboration.security.query.objectAll
+import org.mondo.collaboration.security.query.objectControlWithType
+import org.mondo.collaboration.security.query.objectCompositeWithType
+
+// TODO only EObject assets considered for now
+// TODO currently single direction per priority class
+
+pattern explicitJudgement(user: java String,
+	asset: EObject, op: SecurityOperation, 
+	bound: java Enumerator, dir: BoundDirection, 
+	prio: java Integer)
+{
+	// rule permitUserSpecificControlUnit_x
+	find objectControlWithType(asset, user);
+	find permitRW(op, bound, dir);
+	find specialist(user);
+	prio == 3;
+} or {
+	// rule permitUserRelatedCompositeModules_x
+	find objectCompositeWithType(asset, user);
+	find permitR(op, bound, dir);
+	find specialist(user);
+	prio == 3;
+} or {
+	// rule denyAllModule
+	find objectModule(asset);
+	find denyRW(op, bound, dir);
+	find specialist(user);
+	prio == 2;
+} or {
+	// global default rule: allowEveryhing
+	find objectAll(asset);
+	find permitRW(op, bound, dir);
+	find knownUser(user);
+	prio == 0;
+}
+
+pattern denyRW(op: SecurityOperation, bound: java Enumerator, dir: BoundDirection) = {
+	op == SecurityOperation::READ;
+	bound == ReadLevels::DENY_READ;
+	dir == BoundDirection::AT_MOST;
+} or {
+	op == SecurityOperation::WRITE;
+	bound == WriteLevels::DENY_WRITE;
+	dir == BoundDirection::AT_MOST;
+}
+pattern permitRW(op: SecurityOperation, bound: java Enumerator, dir: BoundDirection) = {
+	op == SecurityOperation::READ;
+	bound == ReadLevels::ALLOW_READ;
+	dir == BoundDirection::AT_LEAST;
+} or {
+	op == SecurityOperation::WRITE;
+	bound == WriteLevels::ALLOW_WRITE;
+	dir == BoundDirection::AT_LEAST;
+}
+pattern permitR(op: SecurityOperation, bound: java Enumerator, dir: BoundDirection) = {
+	op == SecurityOperation::READ;
+	bound == ReadLevels::ALLOW_READ;
+	dir == BoundDirection::AT_LEAST;
+}
+
+pattern specialist(user: java String) = {
+	user == "1";
+} or {
+	user == "2";
+} or {
+	user == "3";
+} or {
+	user == "4";
+} or {
+	user == "5";
+} or {
+	user == "6";
+} or {
+	user == "7";
+} or {
+	user == "8";
+} or {
+	user == "9";
+} or {
+	user == "10";
+}
+
+pattern knownUser(user: java String) = {
+	find specialist(user);
+} or {
+	user == "superuser";
+}
+

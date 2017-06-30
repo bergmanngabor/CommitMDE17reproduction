@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="org.mondo.collaboration.security.arbiter.ArbiterMock" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:org.mondo.collaboration.security.arbiter.ArbiterMock" id="org.mondo.collaboration.security.arbiter.ArbiterMock">
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.judgement_at_0"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.judgement_at_2"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.judgement_at_3"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.dominantJudgement_at_0"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.dominantJudgement_at_2"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.dominantJudgement_at_3"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.domination_of_0"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.domination_of_2"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.domination_of_0_by_2"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.domination_of_0_by_3"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.domination_of_2_by_3"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.strongConsequence_at_0"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.strongConsequence_at_2"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.strongConsequence_at_3"/>
+    </group>
+  </extension>
+  <extension id="org.mondo.collaboration.security.arbiter.ModelWrapper" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:org.mondo.collaboration.security.arbiter.ModelWrapper" id="org.mondo.collaboration.security.arbiter.ModelWrapper">
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.contains"/>
+    </group>
+  </extension>
+  <extension id="org.mondo.collaboration.security.arbiter.PolicyInterpreter" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:org.mondo.collaboration.security.arbiter.PolicyInterpreter" id="org.mondo.collaboration.security.arbiter.PolicyInterpreter">
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.explicitJudgement"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.denyRW"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.permitRW"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.permitR"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.specialist"/>
+      <query-specification fqn="org.mondo.collaboration.security.arbiter.knownUser"/>
+    </group>
+  </extension>
+</plugin>

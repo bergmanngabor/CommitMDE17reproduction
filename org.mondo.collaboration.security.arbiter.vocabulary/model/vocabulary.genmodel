@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel"
+    modelDirectory="/org.mondo.collaboration.security.arbiter.vocabulary/src"
+    modelPluginID="org.mondo.collaboration.security.arbiter.vocabulary" modelName="Vocabulary"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="7.0" copyrightFields="false" operationReflection="true" importOrganizing="true">
+  <foreignModel>vocabulary.ecore</foreignModel>
+  <genPackages prefix="SecurityVocabulary" basePackage="org.eclipse.mondo.collaboration.securitry.arbiter"
+      disposableProviderFactory="true" ecorePackage="vocabulary.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="vocabulary.ecore#//ReadLevels">
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//ReadLevels/DENY_READ"/>
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//ReadLevels/OBFUSCATE_READ"/>
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//ReadLevels/ALLOW_READ"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="vocabulary.ecore#//WriteLevels">
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//WriteLevels/DENY_WRITE"/>
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//WriteLevels/BLIND_DELETABLE_WRITE"/>
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//WriteLevels/ALLOW_WRITE"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="vocabulary.ecore#//BoundDirection">
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//BoundDirection/AT_LEAST"/>
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//BoundDirection/AT_MOST"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="vocabulary.ecore#//SecurityOperation">
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//SecurityOperation/READ"/>
+      <genEnumLiterals ecoreEnumLiteral="vocabulary.ecore#//SecurityOperation/WRITE"/>
+    </genEnums>
+  </genPackages>
+</genmodel:GenModel>

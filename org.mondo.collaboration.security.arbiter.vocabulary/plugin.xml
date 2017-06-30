@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated vocabulary -->
+      <package
+            uri="http://mondo.org/collaboration/security/arbiter/vocabulary"
+            class="org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.SecurityVocabularyPackage"
+            genModel="model/vocabulary.genmodel"/>
+   </extension>
+
+</plugin>
