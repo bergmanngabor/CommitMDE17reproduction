@@ -96,3 +96,11 @@
 /.WritePermissionLevelQuerySpecification.java._trace
 /.EffectiveJudgementProcessor.java._trace
 /.EffectiveJudgementQuerySpecification.java._trace
+/.Domination_by_2Processor.java._trace
+/.Domination_by_2QuerySpecification.java._trace
+/.RelaxedJudgement_at_0Processor.java._trace
+/.RelaxedJudgement_at_0QuerySpecification.java._trace
+/.RelaxedJudgement_at_2Processor.java._trace
+/.RelaxedJudgement_at_2QuerySpecification.java._trace
+/.Domination_by_3Processor.java._trace
+/.Domination_by_3QuerySpecification.java._trace

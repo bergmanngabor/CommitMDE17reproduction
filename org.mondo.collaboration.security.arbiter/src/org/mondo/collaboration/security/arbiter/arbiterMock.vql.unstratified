@@ -13,8 +13,7 @@ pattern judgement(user: java String,
 {
 	find explicitJudgement(user, asset, op, bound, dir, prio);
 } or {
-	// relaxed judgement
-	find domination(user, asset, op, _dominatedBound, dir, prio, bound, _prevailingPrio);
+	find relaxedJudgement(user, asset, op, bound, dir, prio);
 } or {
 	// strong consequence judgement of a (dominant) judgement
 	find strongConsequence(user, asset, op, bound, dir, prio, _domAsset, _domOp, _domBound);	
@@ -22,6 +21,15 @@ pattern judgement(user: java String,
 //	// weak consequence judgement of a (dominant) judgement
 //	find weakConsequence(user, asset, op, bound, dir, prio, _domAsset, _domOp, _domBound, _domPrio);	
 }
+
+pattern relaxedJudgement(user: java String,
+	asset: EObject, op: SecurityOperation, 
+	bound: java Enumerator, dir: BoundDirection, 
+	prio: java Integer) 
+{
+	find domination(user, asset, op, _dominatedBound, dir, prio, bound, _prevailingPrio);
+}
+
 
 pattern effectiveJudgement(user: java String,
 	asset: EObject, op: SecurityOperation, 

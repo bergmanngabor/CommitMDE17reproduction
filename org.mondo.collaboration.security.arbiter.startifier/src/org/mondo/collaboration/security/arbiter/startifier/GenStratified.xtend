@@ -18,7 +18,7 @@ import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.BoundDi
 
 pattern effectiveJudgement(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	bound: java Enumerator, dir: BoundDirection) 
+	bound, dir: BoundDirection) 
 {
 	«FOR prio: priorities SEPARATOR "\n} or {" »
 	find effectiveJudgement_at_«prio»(user, asset, op, bound, dir);
@@ -29,14 +29,13 @@ pattern effectiveJudgement(user: java String,
 «FOR prio: priorities»
 pattern judgement_at_«prio»(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	bound: java Enumerator, dir: BoundDirection) 
+	bound, dir: BoundDirection) 
 {
 	find explicitJudgement(user, asset, op, bound, dir, «prio»);
 «IF prio != priorities.maxBy[it]»
 } or {
 	// relaxed judgement
-	find judgement_at_«prio»(user, asset, op, dominatedBound, dir);
-	find domination_of_«prio»(user, asset, op, _dominatedBound, bound);
+	find relaxedJudgement_at_«prio»(user, asset, op, bound, dir);
 «ENDIF»
 } or {
 	// strong consequence judgement of a (dominant) judgement
@@ -49,10 +48,20 @@ pattern judgement_at_«prio»(user: java String,
 }
 «ENDFOR»
 
+«FOR prio: priorities»«IF prio != priorities.maxBy[it]»
+pattern relaxedJudgement_at_«prio»(user: java String,
+	asset: EObject, op: SecurityOperation, 
+	bound, dir: BoundDirection)
+{
+	find judgement_at_«prio»(user, asset, op, dominatedBound, dir);
+	find domination_of_«prio»(user, asset, op, _dominatedBound, bound);
+}
+«ENDIF»«ENDFOR»
+
 «FOR prio: priorities»
 pattern effectiveJudgement_at_«prio»(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	bound: java Enumerator, dir: BoundDirection) 
+	bound, dir: BoundDirection) 
 {
 	find judgement_at_«prio»(user, asset, op, bound, dir);
 	«IF prio != priorities.maxBy[it]»
@@ -64,26 +73,26 @@ pattern effectiveJudgement_at_«prio»(user: java String,
 «FOR prio: priorities»«IF prio != priorities.maxBy[it]»
 pattern domination_of_«prio»(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
+	dominatedBound, prevailingBound) 
 {
 	«FOR prevailingPrio: priorities.filter[it > prio] SEPARATOR "\n} or {" »
-	find domination_of_«prio»_by_«prevailingPrio»(user, asset, op, dominatedBound, prevailingBound);
+	find domination_by_«prevailingPrio»(user, asset, op, dominatedBound, prevailingBound);
 	«ENDFOR»
 } 
 «ENDIF»«ENDFOR»
 
-«FOR prio: priorities»«FOR prevailingPrio: priorities»«IF prevailingPrio > prio»
-pattern domination_of_«prio»_by_«prevailingPrio»(user: java String,
+«FOR prevailingPrio: priorities»«IF prevailingPrio != priorities.minBy[it]»
+pattern domination_by_«prevailingPrio»(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
+	dominatedBound, prevailingBound) 
 {
 	// NOTE: subsumption is included as well
 	find effectiveJudgement_at_«prevailingPrio»(user, asset, op, prevailingBound, prevailingDir);
 	find permissionOutOfBound(prevailingDir, prevailingBound, dominatedBound);
 }  
-«ENDIF»«ENDFOR»«ENDFOR»
+«ENDIF»«ENDFOR»
 
-pattern readPermissionLevel(level: java Enumerator) = {
+pattern readPermissionLevel(level) = {
 	level == ReadLevels::ALLOW_READ;
 } or {
 	level == ReadLevels::OBFUSCATE_READ;
@@ -91,7 +100,7 @@ pattern readPermissionLevel(level: java Enumerator) = {
 	level == ReadLevels::DENY_READ;
 }
 
-pattern writePermissionLevel(level: java Enumerator) = {
+pattern writePermissionLevel(level) = {
 	level == WriteLevels::ALLOW_WRITE;
 } or {
 	level == WriteLevels::BLIND_DELETABLE_WRITE;
@@ -100,7 +109,7 @@ pattern writePermissionLevel(level: java Enumerator) = {
 }
 
 pattern permissionOutOfBound(prevailingDir: BoundDirection,
-	prevailingBound: java Enumerator, dominatedBound: java Enumerator
+	prevailingBound, dominatedBound
 ) = {
 	find readPermissionLevel(prevailingBound);
 	find readPermissionLevel(dominatedBound);
@@ -116,9 +125,9 @@ pattern permissionOutOfBound(prevailingDir: BoundDirection,
 
 «FOR prio: priorities»
 pattern strongConsequence_at_«prio»(user: java String,
-	depAsset: EObject, depOp: SecurityOperation, depBound: java Enumerator, 
+	depAsset: EObject, depOp: SecurityOperation, depBound, 
 	dir: BoundDirection,
-	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
+	domAsset: EObject, domOp: SecurityOperation, domBound) 
 {
 	// type II, read vs write, AT_LEAST
 	find effectiveJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
@@ -149,9 +158,9 @@ pattern strongConsequence_at_«prio»(user: java String,
 «ENDFOR»
 
 //pattern weakConsequence(user: java String,
-//	depAsset: EObject, depOp: SecurityOperation, depBound: java Enumerator, 
+//	depAsset: EObject, depOp: SecurityOperation, depBound, 
 //	dir: BoundDirection, depPrio: java Integer,
-//	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator,
+//	domAsset: EObject, domOp: SecurityOperation, domBound,
 //	domPrio: java Integer) 
 //{
 //	depPrio == 1;
