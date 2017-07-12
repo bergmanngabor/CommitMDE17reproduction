@@ -14,11 +14,12 @@ import "http://mondo.org/collaboration/security/arbiter/vocabulary"
 
 import java org.eclipse.emf.common.util.Enumerator
 import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.BoundDirection
+import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.SecurityOperation
 
 
 pattern effectiveJudgement(user: java String,
-	asset: EObject, op: SecurityOperation, 
-	bound, dir: BoundDirection) 
+	asset: EObject, op: java SecurityOperation, 
+	bound, dir: java BoundDirection) 
 {
 	«FOR prio: priorities SEPARATOR "\n} or {" »
 	find effectiveJudgement_at_«prio»(user, asset, op, bound, dir);
@@ -28,8 +29,8 @@ pattern effectiveJudgement(user: java String,
 
 «FOR prio: priorities»
 pattern judgement_at_«prio»(user: java String,
-	asset: EObject, op: SecurityOperation, 
-	bound, dir: BoundDirection) 
+	asset: EObject, op: java SecurityOperation, 
+	bound, dir: java BoundDirection) 
 {
 	find explicitJudgement(user, asset, op, bound, dir, «prio»);
 «IF prio != priorities.maxBy[it]»
@@ -50,8 +51,8 @@ pattern judgement_at_«prio»(user: java String,
 
 «FOR prio: priorities»«IF prio != priorities.maxBy[it]»
 pattern relaxedJudgement_at_«prio»(user: java String,
-	asset: EObject, op: SecurityOperation, 
-	bound, dir: BoundDirection)
+	asset: EObject, op: java SecurityOperation, 
+	bound, dir: java BoundDirection)
 {
 	find judgement_at_«prio»(user, asset, op, dominatedBound, dir);
 	find domination_of_«prio»(user, asset, op, _dominatedBound, bound);
@@ -60,8 +61,8 @@ pattern relaxedJudgement_at_«prio»(user: java String,
 
 «FOR prio: priorities»
 pattern effectiveJudgement_at_«prio»(user: java String,
-	asset: EObject, op: SecurityOperation, 
-	bound, dir: BoundDirection) 
+	asset: EObject, op: java SecurityOperation, 
+	bound, dir: java BoundDirection) 
 {
 	find judgement_at_«prio»(user, asset, op, bound, dir);
 	«IF prio != priorities.maxBy[it]»
@@ -72,7 +73,7 @@ pattern effectiveJudgement_at_«prio»(user: java String,
 
 «FOR prio: priorities»«IF prio != priorities.maxBy[it]»
 pattern domination_of_«prio»(user: java String,
-	asset: EObject, op: SecurityOperation, 
+	asset: EObject, op: java SecurityOperation, 
 	dominatedBound, prevailingBound) 
 {
 	«FOR prevailingPrio: priorities.filter[it > prio] SEPARATOR "\n} or {" »
@@ -83,7 +84,7 @@ pattern domination_of_«prio»(user: java String,
 
 «FOR prevailingPrio: priorities»«IF prevailingPrio != priorities.minBy[it]»
 pattern domination_by_«prevailingPrio»(user: java String,
-	asset: EObject, op: SecurityOperation, 
+	asset: EObject, op: java SecurityOperation, 
 	dominatedBound, prevailingBound) 
 {
 	// NOTE: subsumption is included as well
@@ -108,7 +109,7 @@ pattern writePermissionLevel(level) = {
 	level == WriteLevels::DENY_WRITE;
 }
 
-pattern permissionOutOfBound(prevailingDir: BoundDirection,
+pattern permissionOutOfBound(prevailingDir: java BoundDirection,
 	prevailingBound, dominatedBound
 ) = {
 	find readPermissionLevel(prevailingBound);
@@ -125,9 +126,9 @@ pattern permissionOutOfBound(prevailingDir: BoundDirection,
 
 «FOR prio: priorities»
 pattern strongConsequence_at_«prio»(user: java String,
-	depAsset: EObject, depOp: SecurityOperation, depBound, 
-	dir: BoundDirection,
-	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
+	depAsset: EObject, depOp: java SecurityOperation, depBound, 
+	dir: java BoundDirection,
+	domAsset: EObject, domOp: java SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
 	find effectiveJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
@@ -158,9 +159,9 @@ pattern strongConsequence_at_«prio»(user: java String,
 «ENDFOR»
 
 //pattern weakConsequence(user: java String,
-//	depAsset: EObject, depOp: SecurityOperation, depBound, 
-//	dir: BoundDirection, depPrio: java Integer,
-//	domAsset: EObject, domOp: SecurityOperation, domBound,
+//	depAsset: EObject, depOp: java SecurityOperation, depBound, 
+//	dir: java BoundDirection, depPrio: java Integer,
+//	domAsset: EObject, domOp: java SecurityOperation, domBound,
 //	domPrio: java Integer) 
 //{
 //	depPrio == 1;

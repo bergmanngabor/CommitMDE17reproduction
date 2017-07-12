@@ -5,6 +5,11 @@ import "http://wt/access-control"
 import "http://mondo.org/collaboration/security/arbiter/vocabulary"
 
 import java org.eclipse.emf.common.util.Enumerator
+import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.BoundDirection
+import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.SecurityOperation
+import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.ReadLevels
+import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.WriteLevels
+
 
 import org.mondo.collaboration.security.query.objectModule
 import org.mondo.collaboration.security.query.objectAll
@@ -15,8 +20,8 @@ import org.mondo.collaboration.security.query.objectCompositeWithType
 // TODO currently single direction per priority class
 
 pattern explicitJudgement(user: java String,
-	asset: EObject, op: SecurityOperation, 
-	bound, dir: BoundDirection, 
+	asset: EObject, op: java SecurityOperation, 
+	bound, dir: java BoundDirection, 
 	prio: java Integer)
 {
 	// rule permitUserSpecificControlUnit_x
@@ -44,7 +49,7 @@ pattern explicitJudgement(user: java String,
 	prio == 0;
 }
 
-pattern denyRW(op: SecurityOperation, bound, dir: BoundDirection) = {
+pattern denyRW(op: java SecurityOperation, bound, dir: java BoundDirection) = {
 	op == SecurityOperation::READ;
 	bound == ReadLevels::DENY_READ;
 	dir == BoundDirection::AT_MOST;
@@ -53,7 +58,7 @@ pattern denyRW(op: SecurityOperation, bound, dir: BoundDirection) = {
 	bound == WriteLevels::DENY_WRITE;
 	dir == BoundDirection::AT_MOST;
 }
-pattern permitRW(op: SecurityOperation, bound, dir: BoundDirection) = {
+pattern permitRW(op: java SecurityOperation, bound, dir: java BoundDirection) = {
 	op == SecurityOperation::READ;
 	bound == ReadLevels::ALLOW_READ;
 	dir == BoundDirection::AT_LEAST;
@@ -62,7 +67,7 @@ pattern permitRW(op: SecurityOperation, bound, dir: BoundDirection) = {
 	bound == WriteLevels::ALLOW_WRITE;
 	dir == BoundDirection::AT_LEAST;
 }
-pattern permitR(op: SecurityOperation, bound, dir: BoundDirection) = {
+pattern permitR(op: java SecurityOperation, bound, dir: java BoundDirection) = {
 	op == SecurityOperation::READ;
 	bound == ReadLevels::ALLOW_READ;
 	dir == BoundDirection::AT_LEAST;
