@@ -88,3 +88,17 @@
 /StrongConsequence_at_2Matcher.java
 /StrongConsequence_at_3Match.java
 /StrongConsequence_at_3Matcher.java
+/.EffectiveJudgement_at_0Match.java._trace
+/EffectiveJudgement_at_0Matcher.java
+/.EffectiveJudgement_at_2Match.java._trace
+/.EffectiveJudgement_at_2Matcher.java._trace
+/.EffectiveJudgement_at_3Match.java._trace
+/.EffectiveJudgement_at_3Matcher.java._trace
+/.PermissionOutOfBoundMatch.java._trace
+/.PermissionOutOfBoundMatcher.java._trace
+/.ReadPermissionLevelMatch.java._trace
+/.ReadPermissionLevelMatcher.java._trace
+/.WritePermissionLevelMatch.java._trace
+/.WritePermissionLevelMatcher.java._trace
+/.EffectiveJudgementMatch.java._trace
+/.EffectiveJudgementMatcher.java._trace

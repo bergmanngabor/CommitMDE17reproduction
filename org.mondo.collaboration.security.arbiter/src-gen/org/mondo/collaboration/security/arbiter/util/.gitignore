@@ -82,3 +82,17 @@
 /StrongConsequence_at_2QuerySpecification.java
 /StrongConsequence_at_3Processor.java
 /StrongConsequence_at_3QuerySpecification.java
+/.EffectiveJudgement_at_0Processor.java._trace
+/.EffectiveJudgement_at_0QuerySpecification.java._trace
+/.EffectiveJudgement_at_2Processor.java._trace
+/.EffectiveJudgement_at_2QuerySpecification.java._trace
+/.EffectiveJudgement_at_3Processor.java._trace
+/.EffectiveJudgement_at_3QuerySpecification.java._trace
+/.PermissionOutOfBoundProcessor.java._trace
+/.PermissionOutOfBoundQuerySpecification.java._trace
+/.ReadPermissionLevelProcessor.java._trace
+/.ReadPermissionLevelQuerySpecification.java._trace
+/.WritePermissionLevelProcessor.java._trace
+/.WritePermissionLevelQuerySpecification.java._trace
+/.EffectiveJudgementProcessor.java._trace
+/.EffectiveJudgementQuerySpecification.java._trace

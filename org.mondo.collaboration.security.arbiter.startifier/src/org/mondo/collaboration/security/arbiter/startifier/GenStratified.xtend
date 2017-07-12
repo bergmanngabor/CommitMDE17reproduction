@@ -15,15 +15,29 @@ import "http://mondo.org/collaboration/security/arbiter/vocabulary"
 import java org.eclipse.emf.common.util.Enumerator
 import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.BoundDirection
 
+
+pattern effectiveJudgement(user: java String,
+	asset: EObject, op: SecurityOperation, 
+	bound: java Enumerator, dir: BoundDirection) 
+{
+	«FOR prio: priorities SEPARATOR "\n} or {" »
+	find effectiveJudgement_at_«prio»(user, asset, op, bound, dir);
+	«ENDFOR»
+} 
+
+
 «FOR prio: priorities»
 pattern judgement_at_«prio»(user: java String,
 	asset: EObject, op: SecurityOperation, 
 	bound: java Enumerator, dir: BoundDirection) 
 {
 	find explicitJudgement(user, asset, op, bound, dir, «prio»);
+«IF prio != priorities.maxBy[it]»
 } or {
 	// relaxed judgement
-	find domination_of_«prio»(user, asset, op, _dominatedBound, dir, bound);
+	find judgement_at_«prio»(user, asset, op, dominatedBound, dir);
+	find domination_of_«prio»(user, asset, op, _dominatedBound, bound);
+«ENDIF»
 } or {
 	// strong consequence judgement of a (dominant) judgement
 	find strongConsequence_at_«prio»(user, asset, op, bound, dir, _domAsset, _domOp, _domBound);
@@ -36,44 +50,69 @@ pattern judgement_at_«prio»(user: java String,
 «ENDFOR»
 
 «FOR prio: priorities»
-pattern dominantJudgement_at_«prio»(user: java String,
+pattern effectiveJudgement_at_«prio»(user: java String,
 	asset: EObject, op: SecurityOperation, 
 	bound: java Enumerator, dir: BoundDirection) 
 {
 	find judgement_at_«prio»(user, asset, op, bound, dir);
-	neg find domination_of_«prio»(user, asset, op, bound, dir, _prevailingBound);
+	«IF prio != priorities.maxBy[it]»
+	neg find domination_of_«prio»(user, asset, op, bound, _prevailingBound);
+	«ENDIF»
 } 
 «ENDFOR»
 
 «FOR prio: priorities»«IF prio != priorities.maxBy[it]»
 pattern domination_of_«prio»(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, dominatedDir: BoundDirection,
-	prevailingBound: java Enumerator) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
-	«FOR prevailingPrio: priorities»«IF prevailingPrio > prio»
-	find domination_of_«prio»_by_«prevailingPrio»(user, asset, op, dominatedBound, dominatedDir, prevailingBound);
-	«ENDIF»«ENDFOR»
+	«FOR prevailingPrio: priorities.filter[it > prio] SEPARATOR "\n} or {" »
+	find domination_of_«prio»_by_«prevailingPrio»(user, asset, op, dominatedBound, prevailingBound);
+	«ENDFOR»
 } 
 «ENDIF»«ENDFOR»
 
 «FOR prio: priorities»«FOR prevailingPrio: priorities»«IF prevailingPrio > prio»
 pattern domination_of_«prio»_by_«prevailingPrio»(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, dominatedDir: BoundDirection,
-	prevailingBound: java Enumerator) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	// NOTE: subsumption is included as well
-	find judgement_at_«prio»(user, asset, op, dominatedBound, dominatedDir); 
-	find dominantJudgement_at_«prevailingPrio»(user, asset, op, prevailingBound, prevailingDir);
-	check (
-		// TODO equal priority, but dominating direction
-		prevailingDir == BoundDirection::AT_MOST && prevailingBound.value < dominatedBound.value ||
-		prevailingDir == BoundDirection::AT_LEAST && prevailingBound.value > dominatedBound.value
-		// && (dominatedDir != prevailingDir) - omitting this ensures that subsumption is included as well
-	);	
+	find effectiveJudgement_at_«prevailingPrio»(user, asset, op, prevailingBound, prevailingDir);
+	find permissionOutOfBound(prevailingDir, prevailingBound, dominatedBound);
 }  
 «ENDIF»«ENDFOR»«ENDFOR»
+
+pattern readPermissionLevel(level: java Enumerator) = {
+	level == ReadLevels::ALLOW_READ;
+} or {
+	level == ReadLevels::OBFUSCATE_READ;
+} or {
+	level == ReadLevels::DENY_READ;
+}
+
+pattern writePermissionLevel(level: java Enumerator) = {
+	level == WriteLevels::ALLOW_WRITE;
+} or {
+	level == WriteLevels::BLIND_DELETABLE_WRITE;
+} or {
+	level == WriteLevels::DENY_WRITE;
+}
+
+pattern permissionOutOfBound(prevailingDir: BoundDirection,
+	prevailingBound: java Enumerator, dominatedBound: java Enumerator
+) = {
+	find readPermissionLevel(prevailingBound);
+	find readPermissionLevel(dominatedBound);
+	prevailingDir == eval(
+		if (prevailingBound.value < dominatedBound.value) 
+			BoundDirection::AT_MOST
+		else if (prevailingBound.value > dominatedBound.value)
+			BoundDirection::AT_LEAST
+		else null	
+	);
+}
+
 
 «FOR prio: priorities»
 pattern strongConsequence_at_«prio»(user: java String,
@@ -82,26 +121,26 @@ pattern strongConsequence_at_«prio»(user: java String,
 	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
-	find dominantJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
 	depAsset == domAsset; dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::WRITE; depOp == SecurityOperation::READ;
 	domBound == WriteLevels::ALLOW_WRITE; depBound == ReadLevels::ALLOW_READ; 
 } or {
 	// type II, read vs write, AT_MOST
-	find dominantJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
 	depAsset == domAsset; dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::WRITE;
 	domBound != ReadLevels::ALLOW_READ; depBound == WriteLevels::BLIND_DELETABLE_WRITE; 
 } or {
 	// type III, read vs containment, AT_LEAST
-	find dominantJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
 	find contains(depAsset, domAsset);
 	dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
 	domBound == ReadLevels::OBFUSCATE_READ; depBound == ReadLevels::OBFUSCATE_READ; 
 } or {
 	// type III, read vs containment, AT_MOST
-	find dominantJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
 	find contains(domAsset, depAsset);
 	dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;

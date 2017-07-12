@@ -23,8 +23,7 @@ pattern judgement(user: java String,
 //	find weakConsequence(user, asset, op, bound, dir, prio, _domAsset, _domOp, _domBound, _domPrio);	
 }
 
-
-pattern dominantJudgement(user: java String,
+pattern effectiveJudgement(user: java String,
 	asset: EObject, op: SecurityOperation, 
 	bound: java Enumerator, dir: BoundDirection, 
 	prio: java Integer) 
@@ -40,7 +39,7 @@ pattern domination(user: java String,
 {
 	// NOTE: subsumption is included as well
 	find judgement(user, asset, op, dominatedBound, dominatedDir, dominatedPrio); 
-	find dominantJudgement(user, asset, op, prevailingBound, prevailingDir, prevailingPrio);
+	find effectiveJudgement(user, asset, op, prevailingBound, prevailingDir, prevailingPrio);
 	check (
 		(prevailingPrio > dominatedPrio)  // TODO or equal, but dominating direction
 		&& (
@@ -57,26 +56,26 @@ pattern strongConsequence(user: java String,
 	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
-	find dominantJudgement(user, domAsset, domOp, domBound, dir, prio);
+	find effectiveJudgement(user, domAsset, domOp, domBound, dir, prio);
 	depAsset == domAsset; dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::WRITE; depOp == SecurityOperation::READ;
 	domBound == WriteLevels::ALLOW_WRITE; depBound == ReadLevels::ALLOW_READ; 
 } or {
 	// type II, read vs write, AT_MOST
-	find dominantJudgement(user, domAsset, domOp, domBound, dir, prio);
+	find effectiveJudgement(user, domAsset, domOp, domBound, dir, prio);
 	depAsset == domAsset; dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::WRITE;
 	domBound != ReadLevels::ALLOW_READ; depBound == WriteLevels::BLIND_DELETABLE_WRITE; 
 } or {
 	// type III, read vs containment, AT_LEAST
-	find dominantJudgement(user, domAsset, domOp, domBound, dir, prio);
+	find effectiveJudgement(user, domAsset, domOp, domBound, dir, prio);
 	find contains(depAsset, domAsset);
 	dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
 	domBound == ReadLevels::OBFUSCATE_READ; depBound == ReadLevels::OBFUSCATE_READ; 
 } or {
 	// type III, read vs containment, AT_MOST
-	find dominantJudgement(user, domAsset, domOp, domBound, dir, prio);
+	find effectiveJudgement(user, domAsset, domOp, domBound, dir, prio);
 	find contains(domAsset, depAsset);
 	dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;

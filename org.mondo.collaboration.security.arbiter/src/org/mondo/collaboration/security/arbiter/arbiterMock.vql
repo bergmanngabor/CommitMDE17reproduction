@@ -6,6 +6,19 @@ import "http://mondo.org/collaboration/security/arbiter/vocabulary"
 import java org.eclipse.emf.common.util.Enumerator
 import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.BoundDirection
 
+
+pattern effectiveJudgement(user: java String,
+	asset: EObject, op: SecurityOperation, 
+	bound: java Enumerator, dir: BoundDirection) 
+{
+	find effectiveJudgement_at_0(user, asset, op, bound, dir);
+	} or {
+	find effectiveJudgement_at_2(user, asset, op, bound, dir);
+	} or {
+	find effectiveJudgement_at_3(user, asset, op, bound, dir);
+} 
+
+
 pattern judgement_at_0(user: java String,
 	asset: EObject, op: SecurityOperation, 
 	bound: java Enumerator, dir: BoundDirection) 
@@ -13,7 +26,8 @@ pattern judgement_at_0(user: java String,
 	find explicitJudgement(user, asset, op, bound, dir, 0);
 } or {
 	// relaxed judgement
-	find domination_of_0(user, asset, op, _dominatedBound, dir, bound);
+	find judgement_at_0(user, asset, op, dominatedBound, dir);
+	find domination_of_0(user, asset, op, _dominatedBound, bound);
 } or {
 	// strong consequence judgement of a (dominant) judgement
 	find strongConsequence_at_0(user, asset, op, bound, dir, _domAsset, _domOp, _domBound);
@@ -34,7 +48,8 @@ pattern judgement_at_2(user: java String,
 	find explicitJudgement(user, asset, op, bound, dir, 2);
 } or {
 	// relaxed judgement
-	find domination_of_2(user, asset, op, _dominatedBound, dir, bound);
+	find judgement_at_2(user, asset, op, dominatedBound, dir);
+	find domination_of_2(user, asset, op, _dominatedBound, bound);
 } or {
 	// strong consequence judgement of a (dominant) judgement
 	find strongConsequence_at_2(user, asset, op, bound, dir, _domAsset, _domOp, _domBound);
@@ -58,21 +73,21 @@ pattern judgement_at_3(user: java String,
 //	find weakConsequence_at_3_of_3(user, asset, op, bound, dir, _domAsset, _domOp, _domBound);
 }
 
-pattern dominantJudgement_at_0(user: java String,
+pattern effectiveJudgement_at_0(user: java String,
 	asset: EObject, op: SecurityOperation, 
 	bound: java Enumerator, dir: BoundDirection) 
 {
 	find judgement_at_0(user, asset, op, bound, dir);
-	neg find domination_of_0(user, asset, op, bound, dir, _prevailingBound);
+	neg find domination_of_0(user, asset, op, bound, _prevailingBound);
 } 
-pattern dominantJudgement_at_2(user: java String,
+pattern effectiveJudgement_at_2(user: java String,
 	asset: EObject, op: SecurityOperation, 
 	bound: java Enumerator, dir: BoundDirection) 
 {
 	find judgement_at_2(user, asset, op, bound, dir);
-	neg find domination_of_2(user, asset, op, bound, dir, _prevailingBound);
+	neg find domination_of_2(user, asset, op, bound, _prevailingBound);
 } 
-pattern dominantJudgement_at_3(user: java String,
+pattern effectiveJudgement_at_3(user: java String,
 	asset: EObject, op: SecurityOperation, 
 	bound: java Enumerator, dir: BoundDirection) 
 {
@@ -81,65 +96,74 @@ pattern dominantJudgement_at_3(user: java String,
 
 pattern domination_of_0(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, dominatedDir: BoundDirection,
-	prevailingBound: java Enumerator) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
-	find domination_of_0_by_2(user, asset, op, dominatedBound, dominatedDir, prevailingBound);
-	find domination_of_0_by_3(user, asset, op, dominatedBound, dominatedDir, prevailingBound);
+	find domination_of_0_by_2(user, asset, op, dominatedBound, prevailingBound);
+	} or {
+	find domination_of_0_by_3(user, asset, op, dominatedBound, prevailingBound);
 } 
 pattern domination_of_2(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, dominatedDir: BoundDirection,
-	prevailingBound: java Enumerator) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
-	find domination_of_2_by_3(user, asset, op, dominatedBound, dominatedDir, prevailingBound);
+	find domination_of_2_by_3(user, asset, op, dominatedBound, prevailingBound);
 } 
 
 pattern domination_of_0_by_2(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, dominatedDir: BoundDirection,
-	prevailingBound: java Enumerator) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	// NOTE: subsumption is included as well
-	find judgement_at_0(user, asset, op, dominatedBound, dominatedDir); 
-	find dominantJudgement_at_2(user, asset, op, prevailingBound, prevailingDir);
-	check (
-		// TODO equal priority, but dominating direction
-		prevailingDir == BoundDirection::AT_MOST && prevailingBound.value < dominatedBound.value ||
-		prevailingDir == BoundDirection::AT_LEAST && prevailingBound.value > dominatedBound.value
-		// && (dominatedDir != prevailingDir) - omitting this ensures that subsumption is included as well
-	);	
+	find effectiveJudgement_at_2(user, asset, op, prevailingBound, prevailingDir);
+	find permissionOutOfBound(prevailingDir, prevailingBound, dominatedBound);
 }  
 pattern domination_of_0_by_3(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, dominatedDir: BoundDirection,
-	prevailingBound: java Enumerator) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	// NOTE: subsumption is included as well
-	find judgement_at_0(user, asset, op, dominatedBound, dominatedDir); 
-	find dominantJudgement_at_3(user, asset, op, prevailingBound, prevailingDir);
-	check (
-		// TODO equal priority, but dominating direction
-		prevailingDir == BoundDirection::AT_MOST && prevailingBound.value < dominatedBound.value ||
-		prevailingDir == BoundDirection::AT_LEAST && prevailingBound.value > dominatedBound.value
-		// && (dominatedDir != prevailingDir) - omitting this ensures that subsumption is included as well
-	);	
+	find effectiveJudgement_at_3(user, asset, op, prevailingBound, prevailingDir);
+	find permissionOutOfBound(prevailingDir, prevailingBound, dominatedBound);
 }  
 pattern domination_of_2_by_3(user: java String,
 	asset: EObject, op: SecurityOperation, 
-	dominatedBound: java Enumerator, dominatedDir: BoundDirection,
-	prevailingBound: java Enumerator) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	// NOTE: subsumption is included as well
-	find judgement_at_2(user, asset, op, dominatedBound, dominatedDir); 
-	find dominantJudgement_at_3(user, asset, op, prevailingBound, prevailingDir);
-	check (
-		// TODO equal priority, but dominating direction
-		prevailingDir == BoundDirection::AT_MOST && prevailingBound.value < dominatedBound.value ||
-		prevailingDir == BoundDirection::AT_LEAST && prevailingBound.value > dominatedBound.value
-		// && (dominatedDir != prevailingDir) - omitting this ensures that subsumption is included as well
-	);	
+	find effectiveJudgement_at_3(user, asset, op, prevailingBound, prevailingDir);
+	find permissionOutOfBound(prevailingDir, prevailingBound, dominatedBound);
 }  
+
+pattern readPermissionLevel(level: java Enumerator) = {
+	level == ReadLevels::ALLOW_READ;
+} or {
+	level == ReadLevels::OBFUSCATE_READ;
+} or {
+	level == ReadLevels::DENY_READ;
+}
+
+pattern writePermissionLevel(level: java Enumerator) = {
+	level == WriteLevels::ALLOW_WRITE;
+} or {
+	level == WriteLevels::BLIND_DELETABLE_WRITE;
+} or {
+	level == WriteLevels::DENY_WRITE;
+}
+
+pattern permissionOutOfBound(prevailingDir: BoundDirection,
+	prevailingBound: java Enumerator, dominatedBound: java Enumerator
+) = {
+	find readPermissionLevel(prevailingBound);
+	find readPermissionLevel(dominatedBound);
+	prevailingDir == eval(
+		if (prevailingBound.value < dominatedBound.value) 
+			BoundDirection::AT_MOST
+		else if (prevailingBound.value > dominatedBound.value)
+			BoundDirection::AT_LEAST
+		else null	
+	);
+}
+
 
 pattern strongConsequence_at_0(user: java String,
 	depAsset: EObject, depOp: SecurityOperation, depBound: java Enumerator, 
@@ -147,26 +171,26 @@ pattern strongConsequence_at_0(user: java String,
 	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
-	find dominantJudgement_at_0(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_0(user, domAsset, domOp, domBound, dir);
 	depAsset == domAsset; dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::WRITE; depOp == SecurityOperation::READ;
 	domBound == WriteLevels::ALLOW_WRITE; depBound == ReadLevels::ALLOW_READ; 
 } or {
 	// type II, read vs write, AT_MOST
-	find dominantJudgement_at_0(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_0(user, domAsset, domOp, domBound, dir);
 	depAsset == domAsset; dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::WRITE;
 	domBound != ReadLevels::ALLOW_READ; depBound == WriteLevels::BLIND_DELETABLE_WRITE; 
 } or {
 	// type III, read vs containment, AT_LEAST
-	find dominantJudgement_at_0(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_0(user, domAsset, domOp, domBound, dir);
 	find contains(depAsset, domAsset);
 	dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
 	domBound == ReadLevels::OBFUSCATE_READ; depBound == ReadLevels::OBFUSCATE_READ; 
 } or {
 	// type III, read vs containment, AT_MOST
-	find dominantJudgement_at_0(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_0(user, domAsset, domOp, domBound, dir);
 	find contains(domAsset, depAsset);
 	dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
@@ -178,26 +202,26 @@ pattern strongConsequence_at_2(user: java String,
 	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
-	find dominantJudgement_at_2(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_2(user, domAsset, domOp, domBound, dir);
 	depAsset == domAsset; dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::WRITE; depOp == SecurityOperation::READ;
 	domBound == WriteLevels::ALLOW_WRITE; depBound == ReadLevels::ALLOW_READ; 
 } or {
 	// type II, read vs write, AT_MOST
-	find dominantJudgement_at_2(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_2(user, domAsset, domOp, domBound, dir);
 	depAsset == domAsset; dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::WRITE;
 	domBound != ReadLevels::ALLOW_READ; depBound == WriteLevels::BLIND_DELETABLE_WRITE; 
 } or {
 	// type III, read vs containment, AT_LEAST
-	find dominantJudgement_at_2(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_2(user, domAsset, domOp, domBound, dir);
 	find contains(depAsset, domAsset);
 	dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
 	domBound == ReadLevels::OBFUSCATE_READ; depBound == ReadLevels::OBFUSCATE_READ; 
 } or {
 	// type III, read vs containment, AT_MOST
-	find dominantJudgement_at_2(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_2(user, domAsset, domOp, domBound, dir);
 	find contains(domAsset, depAsset);
 	dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
@@ -209,26 +233,26 @@ pattern strongConsequence_at_3(user: java String,
 	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
-	find dominantJudgement_at_3(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_3(user, domAsset, domOp, domBound, dir);
 	depAsset == domAsset; dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::WRITE; depOp == SecurityOperation::READ;
 	domBound == WriteLevels::ALLOW_WRITE; depBound == ReadLevels::ALLOW_READ; 
 } or {
 	// type II, read vs write, AT_MOST
-	find dominantJudgement_at_3(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_3(user, domAsset, domOp, domBound, dir);
 	depAsset == domAsset; dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::WRITE;
 	domBound != ReadLevels::ALLOW_READ; depBound == WriteLevels::BLIND_DELETABLE_WRITE; 
 } or {
 	// type III, read vs containment, AT_LEAST
-	find dominantJudgement_at_3(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_3(user, domAsset, domOp, domBound, dir);
 	find contains(depAsset, domAsset);
 	dir == BoundDirection::AT_LEAST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
 	domBound == ReadLevels::OBFUSCATE_READ; depBound == ReadLevels::OBFUSCATE_READ; 
 } or {
 	// type III, read vs containment, AT_MOST
-	find dominantJudgement_at_3(user, domAsset, domOp, domBound, dir);
+	find effectiveJudgement_at_3(user, domAsset, domOp, domBound, dir);
 	find contains(domAsset, depAsset);
 	dir == BoundDirection::AT_MOST;
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
