@@ -173,7 +173,7 @@ pattern permissionOutOfBound(prevailingDir: BoundDirection,
 pattern strongConsequence_at_0(user: java String,
 	depAsset: EObject, depOp: SecurityOperation, depBound, 
 	dir: BoundDirection,
-	domAsset: EObject, domOp: SecurityOperation, domBound) 
+	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
 	find effectiveJudgement_at_0(user, domAsset, domOp, domBound, dir);
@@ -204,7 +204,7 @@ pattern strongConsequence_at_0(user: java String,
 pattern strongConsequence_at_2(user: java String,
 	depAsset: EObject, depOp: SecurityOperation, depBound, 
 	dir: BoundDirection,
-	domAsset: EObject, domOp: SecurityOperation, domBound) 
+	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
 	find effectiveJudgement_at_2(user, domAsset, domOp, domBound, dir);
@@ -235,7 +235,7 @@ pattern strongConsequence_at_2(user: java String,
 pattern strongConsequence_at_3(user: java String,
 	depAsset: EObject, depOp: SecurityOperation, depBound, 
 	dir: BoundDirection,
-	domAsset: EObject, domOp: SecurityOperation, domBound) 
+	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
 	find effectiveJudgement_at_3(user, domAsset, domOp, domBound, dir);

@@ -127,7 +127,7 @@ pattern permissionOutOfBound(prevailingDir: BoundDirection,
 pattern strongConsequence_at_«prio»(user: java String,
 	depAsset: EObject, depOp: SecurityOperation, depBound, 
 	dir: BoundDirection,
-	domAsset: EObject, domOp: SecurityOperation, domBound) 
+	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator) 
 {
 	// type II, read vs write, AT_LEAST
 	find effectiveJudgement_at_«prio»(user, domAsset, domOp, domBound, dir);
