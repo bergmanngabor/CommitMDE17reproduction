@@ -10,7 +10,7 @@ import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.Securit
 
 pattern effectiveJudgement(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find effectiveJudgement_at_0(user, asset, op, bound, dir);
 	} or {
@@ -22,7 +22,7 @@ pattern effectiveJudgement(user: java String,
 
 pattern judgement_at_0(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find explicitJudgement(user, asset, op, bound, dir, 0);
 } or {
@@ -43,7 +43,7 @@ pattern judgement_at_0(user: java String,
 }
 pattern judgement_at_2(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find explicitJudgement(user, asset, op, bound, dir, 2);
 } or {
@@ -61,7 +61,7 @@ pattern judgement_at_2(user: java String,
 }
 pattern judgement_at_3(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find explicitJudgement(user, asset, op, bound, dir, 3);
 } or {
@@ -74,14 +74,14 @@ pattern judgement_at_3(user: java String,
 
 pattern relaxedJudgement_at_0(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection)
+	bound: java Enumerator, dir: java BoundDirection)
 {
 	find judgement_at_0(user, asset, op, dominatedBound, dir);
 	find domination_of_0(user, asset, op, _dominatedBound, bound);
 }
 pattern relaxedJudgement_at_2(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection)
+	bound: java Enumerator, dir: java BoundDirection)
 {
 	find judgement_at_2(user, asset, op, dominatedBound, dir);
 	find domination_of_2(user, asset, op, _dominatedBound, bound);
@@ -89,28 +89,28 @@ pattern relaxedJudgement_at_2(user: java String,
 
 pattern effectiveJudgement_at_0(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find judgement_at_0(user, asset, op, bound, dir);
 	neg find domination_of_0(user, asset, op, bound, _prevailingBound);
 } 
 pattern effectiveJudgement_at_2(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find judgement_at_2(user, asset, op, bound, dir);
 	neg find domination_of_2(user, asset, op, bound, _prevailingBound);
 } 
 pattern effectiveJudgement_at_3(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find judgement_at_3(user, asset, op, bound, dir);
 } 
 
 pattern domination_of_0(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	dominatedBound, prevailingBound) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	find domination_by_2(user, asset, op, dominatedBound, prevailingBound);
 	} or {
@@ -118,14 +118,14 @@ pattern domination_of_0(user: java String,
 } 
 pattern domination_of_2(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	dominatedBound, prevailingBound) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	find domination_by_3(user, asset, op, dominatedBound, prevailingBound);
 } 
 
 pattern domination_by_2(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	dominatedBound, prevailingBound) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	// NOTE: subsumption is included as well
 	find effectiveJudgement_at_2(user, asset, op, prevailingBound, prevailingDir);
@@ -133,7 +133,7 @@ pattern domination_by_2(user: java String,
 }  
 pattern domination_by_3(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	dominatedBound, prevailingBound) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	// NOTE: subsumption is included as well
 	find effectiveJudgement_at_3(user, asset, op, prevailingBound, prevailingDir);
@@ -157,10 +157,20 @@ pattern writePermissionLevel(level) = {
 }
 
 pattern permissionOutOfBound(prevailingDir: java BoundDirection,
-	prevailingBound, dominatedBound
+	prevailingBound: java Enumerator, dominatedBound: java Enumerator
 ) = {
 	find readPermissionLevel(prevailingBound);
 	find readPermissionLevel(dominatedBound);
+	prevailingDir == eval(
+		if (prevailingBound.value < dominatedBound.value) 
+			BoundDirection::AT_MOST
+		else if (prevailingBound.value > dominatedBound.value)
+			BoundDirection::AT_LEAST
+		else null	
+	);
+} or {
+	find writePermissionLevel(prevailingBound);
+	find writePermissionLevel(dominatedBound);
 	prevailingDir == eval(
 		if (prevailingBound.value < dominatedBound.value) 
 			BoundDirection::AT_MOST
@@ -172,7 +182,7 @@ pattern permissionOutOfBound(prevailingDir: java BoundDirection,
 
 
 pattern strongConsequence_at_0(user: java String,
-	depAsset: EObject, depOp: java SecurityOperation, depBound, 
+	depAsset: EObject, depOp: java SecurityOperation, depBound: java Enumerator, 
 	dir: java BoundDirection,
 	domAsset: EObject, domOp: java SecurityOperation, domBound: java Enumerator) 
 {
@@ -203,7 +213,7 @@ pattern strongConsequence_at_0(user: java String,
 	domBound == ReadLevels::DENY_READ; depBound == ReadLevels::DENY_READ; 
 }
 pattern strongConsequence_at_2(user: java String,
-	depAsset: EObject, depOp: java SecurityOperation, depBound, 
+	depAsset: EObject, depOp: java SecurityOperation, depBound: java Enumerator, 
 	dir: java BoundDirection,
 	domAsset: EObject, domOp: java SecurityOperation, domBound: java Enumerator) 
 {
@@ -234,7 +244,7 @@ pattern strongConsequence_at_2(user: java String,
 	domBound == ReadLevels::DENY_READ; depBound == ReadLevels::DENY_READ; 
 }
 pattern strongConsequence_at_3(user: java String,
-	depAsset: EObject, depOp: java SecurityOperation, depBound, 
+	depAsset: EObject, depOp: java SecurityOperation, depBound: java Enumerator, 
 	dir: java BoundDirection,
 	domAsset: EObject, domOp: java SecurityOperation, domBound: java Enumerator) 
 {
@@ -266,9 +276,9 @@ pattern strongConsequence_at_3(user: java String,
 }
 
 //pattern weakConsequence(user: java String,
-//	depAsset: EObject, depOp: java SecurityOperation, depBound, 
+//	depAsset: EObject, depOp: java SecurityOperation, depBound: java Enumerator, 
 //	dir: java BoundDirection, depPrio: java Integer,
-//	domAsset: EObject, domOp: java SecurityOperation, domBound,
+//	domAsset: EObject, domOp: java SecurityOperation, domBound: java Enumerator,
 //	domPrio: java Integer) 
 //{
 //	depPrio == 1;

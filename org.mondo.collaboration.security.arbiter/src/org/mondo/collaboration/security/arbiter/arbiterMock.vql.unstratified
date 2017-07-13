@@ -17,9 +17,6 @@ pattern judgement(user: java String,
 } or {
 	// strong consequence judgement of a (dominant) judgement
 	find strongConsequence(user, asset, op, bound, dir, prio, _domAsset, _domOp, _domBound);	
-//} or {
-//	// weak consequence judgement of a (dominant) judgement
-//	find weakConsequence(user, asset, op, bound, dir, prio, _domAsset, _domOp, _domBound, _domPrio);	
 }
 
 pattern relaxedJudgement(user: java String,
@@ -89,13 +86,3 @@ pattern strongConsequence(user: java String,
 	domOp == SecurityOperation::READ; depOp == SecurityOperation::READ;
 	domBound == ReadLevels::DENY_READ; depBound == ReadLevels::DENY_READ; 
 }
-
-//pattern weakConsequence(user: java String,
-//	depAsset: EObject, depOp: SecurityOperation, depBound: java Enumerator, 
-//	dir: BoundDirection, depPrio: java Integer,
-//	domAsset: EObject, domOp: SecurityOperation, domBound: java Enumerator,
-//	domPrio: java Integer) 
-//{
-//	depPrio == 1;
-//	// TODO implement; not needed for example
-//}

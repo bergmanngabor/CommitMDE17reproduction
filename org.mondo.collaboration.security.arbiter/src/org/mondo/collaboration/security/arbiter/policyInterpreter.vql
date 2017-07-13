@@ -21,7 +21,7 @@ import org.mondo.collaboration.security.query.objectCompositeWithType
 
 pattern explicitJudgement(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection, 
+	bound: java Enumerator, dir: java BoundDirection, 
 	prio: java Integer)
 {
 	// rule permitUserSpecificControlUnit_x
@@ -49,7 +49,7 @@ pattern explicitJudgement(user: java String,
 	prio == 0;
 }
 
-pattern denyRW(op: java SecurityOperation, bound, dir: java BoundDirection) = {
+pattern denyRW(op: java SecurityOperation, bound: java Enumerator, dir: java BoundDirection) = {
 	op == SecurityOperation::READ;
 	bound == ReadLevels::DENY_READ;
 	dir == BoundDirection::AT_MOST;
@@ -58,7 +58,7 @@ pattern denyRW(op: java SecurityOperation, bound, dir: java BoundDirection) = {
 	bound == WriteLevels::DENY_WRITE;
 	dir == BoundDirection::AT_MOST;
 }
-pattern permitRW(op: java SecurityOperation, bound, dir: java BoundDirection) = {
+pattern permitRW(op: java SecurityOperation, bound: java Enumerator, dir: java BoundDirection) = {
 	op == SecurityOperation::READ;
 	bound == ReadLevels::ALLOW_READ;
 	dir == BoundDirection::AT_LEAST;
@@ -67,7 +67,7 @@ pattern permitRW(op: java SecurityOperation, bound, dir: java BoundDirection) = 
 	bound == WriteLevels::ALLOW_WRITE;
 	dir == BoundDirection::AT_LEAST;
 }
-pattern permitR(op: java SecurityOperation, bound, dir: java BoundDirection) = {
+pattern permitR(op: java SecurityOperation, bound: java Enumerator, dir: java BoundDirection) = {
 	op == SecurityOperation::READ;
 	bound == ReadLevels::ALLOW_READ;
 	dir == BoundDirection::AT_LEAST;

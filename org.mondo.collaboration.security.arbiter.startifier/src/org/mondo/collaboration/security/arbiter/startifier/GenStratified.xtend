@@ -19,7 +19,7 @@ import java org.eclipse.mondo.collaboration.securitry.arbiter.vocabulary.Securit
 
 pattern effectiveJudgement(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	«FOR prio: priorities SEPARATOR "\n} or {" »
 	find effectiveJudgement_at_«prio»(user, asset, op, bound, dir);
@@ -30,7 +30,7 @@ pattern effectiveJudgement(user: java String,
 «FOR prio: priorities»
 pattern judgement_at_«prio»(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find explicitJudgement(user, asset, op, bound, dir, «prio»);
 «IF prio != priorities.maxBy[it]»
@@ -52,7 +52,7 @@ pattern judgement_at_«prio»(user: java String,
 «FOR prio: priorities»«IF prio != priorities.maxBy[it]»
 pattern relaxedJudgement_at_«prio»(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection)
+	bound: java Enumerator, dir: java BoundDirection)
 {
 	find judgement_at_«prio»(user, asset, op, dominatedBound, dir);
 	find domination_of_«prio»(user, asset, op, _dominatedBound, bound);
@@ -62,7 +62,7 @@ pattern relaxedJudgement_at_«prio»(user: java String,
 «FOR prio: priorities»
 pattern effectiveJudgement_at_«prio»(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	bound, dir: java BoundDirection) 
+	bound: java Enumerator, dir: java BoundDirection) 
 {
 	find judgement_at_«prio»(user, asset, op, bound, dir);
 	«IF prio != priorities.maxBy[it]»
@@ -74,7 +74,7 @@ pattern effectiveJudgement_at_«prio»(user: java String,
 «FOR prio: priorities»«IF prio != priorities.maxBy[it]»
 pattern domination_of_«prio»(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	dominatedBound, prevailingBound) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	«FOR prevailingPrio: priorities.filter[it > prio] SEPARATOR "\n} or {" »
 	find domination_by_«prevailingPrio»(user, asset, op, dominatedBound, prevailingBound);
@@ -85,7 +85,7 @@ pattern domination_of_«prio»(user: java String,
 «FOR prevailingPrio: priorities»«IF prevailingPrio != priorities.minBy[it]»
 pattern domination_by_«prevailingPrio»(user: java String,
 	asset: EObject, op: java SecurityOperation, 
-	dominatedBound, prevailingBound) 
+	dominatedBound: java Enumerator, prevailingBound: java Enumerator) 
 {
 	// NOTE: subsumption is included as well
 	find effectiveJudgement_at_«prevailingPrio»(user, asset, op, prevailingBound, prevailingDir);
@@ -110,10 +110,20 @@ pattern writePermissionLevel(level) = {
 }
 
 pattern permissionOutOfBound(prevailingDir: java BoundDirection,
-	prevailingBound, dominatedBound
+	prevailingBound: java Enumerator, dominatedBound: java Enumerator
 ) = {
 	find readPermissionLevel(prevailingBound);
 	find readPermissionLevel(dominatedBound);
+	prevailingDir == eval(
+		if (prevailingBound.value < dominatedBound.value) 
+			BoundDirection::AT_MOST
+		else if (prevailingBound.value > dominatedBound.value)
+			BoundDirection::AT_LEAST
+		else null	
+	);
+} or {
+	find writePermissionLevel(prevailingBound);
+	find writePermissionLevel(dominatedBound);
 	prevailingDir == eval(
 		if (prevailingBound.value < dominatedBound.value) 
 			BoundDirection::AT_MOST
@@ -126,7 +136,7 @@ pattern permissionOutOfBound(prevailingDir: java BoundDirection,
 
 «FOR prio: priorities»
 pattern strongConsequence_at_«prio»(user: java String,
-	depAsset: EObject, depOp: java SecurityOperation, depBound, 
+	depAsset: EObject, depOp: java SecurityOperation, depBound: java Enumerator, 
 	dir: java BoundDirection,
 	domAsset: EObject, domOp: java SecurityOperation, domBound: java Enumerator) 
 {
@@ -159,9 +169,9 @@ pattern strongConsequence_at_«prio»(user: java String,
 «ENDFOR»
 
 //pattern weakConsequence(user: java String,
-//	depAsset: EObject, depOp: java SecurityOperation, depBound, 
+//	depAsset: EObject, depOp: java SecurityOperation, depBound: java Enumerator, 
 //	dir: java BoundDirection, depPrio: java Integer,
-//	domAsset: EObject, domOp: java SecurityOperation, domBound,
+//	domAsset: EObject, domOp: java SecurityOperation, domBound: java Enumerator,
 //	domPrio: java Integer) 
 //{
 //	depPrio == 1;
