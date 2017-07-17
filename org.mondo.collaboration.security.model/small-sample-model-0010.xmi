@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="ASCII"?>
+<wt:Composite
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:wt="http://wt/access-control"
+    vendor="">
+  <submodules
+      xsi:type="wt:Composite"
+      vendor="4"
+      protectedIP="true">
+    <submodules
+        xsi:type="wt:Composite"
+        consumes="//@submodules.0/@submodules.0/@submodules.0/@provides.1 //@submodules.0/@submodules.0/@submodules.1/@provides.1"
+        vendor="4">
+      <provides/>
+      <provides/>
+      <provides/>
+      <provides/>
+      <submodules
+          xsi:type="wt:Control"
+          consumes="//@submodules.0/@submodules.0/@provides.0"
+          type="6"
+          cycle="medium">
+        <provides/>
+        <provides/>
+      </submodules>
+      <submodules
+          xsi:type="wt:Control"
+          consumes="//@submodules.0/@submodules.0/@provides.2"
+          type="1"
+          cycle="medium">
+        <provides/>
+        <provides/>
+      </submodules>
+    </submodules>
+    <submodules
+        xsi:type="wt:Composite"
+        consumes="//@submodules.0/@submodules.1/@submodules.0/@provides.1 //@submodules.0/@submodules.1/@submodules.1/@provides.1"
+        vendor="4"
+        protectedIP="true">
+      <provides/>
+      <provides/>
+      <provides/>
+      <provides/>
+      <submodules
+          xsi:type="wt:Control"
+          consumes="//@submodules.0/@submodules.1/@provides.0"
+          type="10"
+          cycle="medium">
+        <provides/>
+        <provides/>
+      </submodules>
+      <submodules
+          xsi:type="wt:Control"
+          consumes="//@submodules.0/@submodules.1/@provides.2"
+          type="2">
+        <provides/>
+        <provides/>
+      </submodules>
+    </submodules>
+  </submodules>
+</wt:Composite>
